@@ -1,8 +1,8 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using HaruEditor.Desktop.ViewModels;
 using HaruEditor.Desktop.Views;
+using HaruEditor.Library.ViewModels;
 
 namespace HaruEditor.Desktop;
 
