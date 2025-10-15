@@ -1,7 +1,7 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using HaruEditor.Desktop.ViewModels;
+using HaruEditor.Library.ViewModels;
 
 namespace HaruEditor.Desktop;
 
@@ -12,7 +12,7 @@ public class ViewLocator : IDataTemplate
         if (param is null)
             return null;
 
-        var name = param.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
+        var name = param.GetType().FullName!.Replace("HaruEditor.Library.ViewModel", "HaruEditor.Desktop.View", StringComparison.Ordinal);
         var type = Type.GetType(name);
 
         if (type != null)
