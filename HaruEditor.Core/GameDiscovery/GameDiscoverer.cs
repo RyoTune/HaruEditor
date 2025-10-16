@@ -1,14 +1,14 @@
 using System.Diagnostics.CodeAnalysis;
 using Gameloop.Vdf;
 using Gameloop.Vdf.JsonConverter;
-using HaruEditor.Library.GameDiscovery.Models;
+using HaruEditor.Core.GameDiscovery.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 
 // ReSharper disable StringLiteralTypo
 // ReSharper disable StringLiteralTypo
 
-namespace HaruEditor.Library.GameDiscovery;
+namespace HaruEditor.Core.GameDiscovery;
 
 public class GameDiscoverer
 {

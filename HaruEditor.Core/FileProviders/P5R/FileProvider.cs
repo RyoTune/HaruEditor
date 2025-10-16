@@ -4,10 +4,10 @@ using System.Reactive.Disposables.Fluent;
 using CriFsV2Lib;
 using CriFsV2Lib.Definitions;
 using CriFsV2Lib.Definitions.Structs;
-using HaruEditor.Library.GameDiscovery;
+using HaruEditor.Core.GameDiscovery;
 using Microsoft.Extensions.Logging;
 
-namespace HaruEditor.Library.FileProviders.P5R;
+namespace HaruEditor.Core.FileProviders.P5R;
 
 public class FileProvider : IFileProvider
 {

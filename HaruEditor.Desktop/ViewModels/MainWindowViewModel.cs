@@ -1,13 +1,16 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using DynamicData.Binding;
-using HaruEditor.Library.Tables.P5R;
+using HaruEditor.Core.Tables.P5R;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
-namespace HaruEditor.Library.ViewModels;
+namespace HaruEditor.Desktop.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {

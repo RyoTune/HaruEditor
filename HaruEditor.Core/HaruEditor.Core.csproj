@@ -8,6 +8,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="CriFsV2Lib" Version="2.1.2" />
+      <PackageReference Include="Gameloop.Vdf" Version="0.6.2" />
+      <PackageReference Include="Gameloop.Vdf.JsonConverter" Version="0.2.1" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.10" />
       <PackageReference Include="ReactiveUI" Version="22.1.1" />
       <PackageReference Include="ReactiveUI.SourceGenerators" Version="2.4.1">
         <PrivateAssets>all</PrivateAssets>

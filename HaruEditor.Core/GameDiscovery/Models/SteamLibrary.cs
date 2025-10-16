@@ -1,6 +1,6 @@
 // ReSharper disable ClassNeverInstantiated.Global
 // ReSharper disable CollectionNeverUpdated.Global
-namespace HaruEditor.Library.GameDiscovery.Models;
+namespace HaruEditor.Core.GameDiscovery.Models;
 
 public class SteamLibrary
 {

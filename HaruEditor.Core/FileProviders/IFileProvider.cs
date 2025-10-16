@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace HaruEditor.Library.FileProviders;
+namespace HaruEditor.Core.FileProviders;
 
 public interface IFileProvider
 {

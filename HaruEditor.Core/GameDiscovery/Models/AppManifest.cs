@@ -1,4 +1,4 @@
-namespace HaruEditor.Library.GameDiscovery.Models;
+namespace HaruEditor.Core.GameDiscovery.Models;
 
 public class AppManifest
 {

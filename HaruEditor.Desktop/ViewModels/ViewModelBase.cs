@@ -1,5 +1,5 @@
 ﻿using ReactiveUI;
 
-namespace HaruEditor.Library.ViewModels;
+namespace HaruEditor.Desktop.ViewModels;
 
 public class ViewModelBase : ReactiveObject;
