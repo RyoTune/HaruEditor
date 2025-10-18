@@ -1,0 +1,11 @@
+[echoes_config]
+generated_class_name = "Strings"
+generated_namespace = "HaruEditor.Desktop.Localization"
+
+[translations]
+tags = "Tags"
+properties = "Properties"
+comment = "Comment"
+
+
+
