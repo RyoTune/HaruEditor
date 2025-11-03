@@ -7,21 +7,24 @@ namespace HaruEditor.Core.Tables.P5R;
 
 public class UnitTable : IReadWrite
 {
-    public UnitTable() {}
+    public UnitTable(INameTable nameTable, string file) : this(nameTable, File.OpenRead(file), true) {}
 
-    public UnitTable(string file) : this(File.OpenRead(file), true) {}
-
-    public UnitTable(Stream stream, bool ownsStream)
+    public UnitTable(INameTable nameTable, Stream stream, bool ownsStream)
     {
+        EnemyUnitStatsSegment = new(nameTable);
+        EnemyElementalAffinitiesSegment = new(nameTable);
+        PersonaElementalAffinitiesSegment = new(nameTable);
+        UnitVoiceIndexSegment = new(nameTable);
+        UnitVisualIndexSegment = new(nameTable);
         using var reader = new BigEndianBinaryReader(stream, ownsStream);
         Read(reader);
     }
 
-    public EnemyUnitStatsSegment EnemyUnitStatsSegment { get; set; } = [];
-    public EnemyElementalAffinitiesSegment EnemyElementalAffinitiesSegment { get; set; } = [];
-    public PersonaElementalAffinitiesSegment PersonaElementalAffinitiesSegment { get; set; } = [];
-    public UnitVoiceIndexSegment UnitVoiceIndexSegment { get; set; } = [];
-    public UnitVisualIndexSegment UnitVisualIndexSegment { get; set; } = [];
+    public EnemyUnitStatsSegment EnemyUnitStatsSegment { get; set; }
+    public EnemyElementalAffinitiesSegment EnemyElementalAffinitiesSegment { get; set; }
+    public PersonaElementalAffinitiesSegment PersonaElementalAffinitiesSegment { get; set; }
+    public UnitVoiceIndexSegment UnitVoiceIndexSegment { get; set; }
+    public UnitVisualIndexSegment UnitVisualIndexSegment { get; set; }
     
     [Browsable(false)]
     public UnknownSegment UnknownSegment { get; set; } = [];
@@ -71,37 +74,42 @@ public class UnitTable : IReadWrite
     }
 }
 
-public class EnemyUnitStatsSegment : BaseSegment<EnemyUnitStats>
+public class EnemyUnitStatsSegment(INameTable nameTable) : BaseSegment<EnemyUnitStats>(nameTable)
 {
     public override uint ItemSize { get; } = 0x44;
 }
 
-public class EnemyElementalAffinitiesSegment : BaseSegment<ElementalAffinities>
-{
-    public override uint ItemSize { get; } = 0x28;
-}
-public class PersonaElementalAffinitiesSegment : BaseSegment<ElementalAffinities>
+public class EnemyElementalAffinitiesSegment(INameTable nameTable) : BaseSegment<ElementalAffinitiesEnemy>(nameTable)
 {
     public override uint ItemSize { get; } = 0x28;
 }
 
-public class UnitVoiceIndexSegment : BaseSegment<UnitVoiceIndex>
+public class PersonaElementalAffinitiesSegment(INameTable nameTable) : BaseSegment<ElementalAffinitiesPersona>(nameTable)
+{
+    public override uint ItemSize { get; } = 0x28;
+}
+
+public class UnitVoiceIndexSegment(INameTable nameTable) : BaseSegment<UnitVoiceIndex>(nameTable)
 {
     public override uint ItemSize { get; } = 0x18;
 }
 
-public class UnitVisualIndexSegment : BaseSegment<UnitVisualIndex>
+public class UnitVisualIndexSegment(INameTable nameTable) : BaseSegment<UnitVisualIndex>(nameTable)
 {
     public override uint ItemSize { get; } = 0x6;
 }
 
-public class UnitVisualIndex : IReadWrite
+public class UnitVisualIndex(INameTable nameTable, int id) : IReadWrite, INameable
 {
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.Enemy, id);
+        set => nameTable.SetName(NameType.Enemy, id, value ?? string.Empty);
+    }
+    
     public ushort PersonaIndex { get; set; }  // Persona ID when captured
     public ushort ModelIndex { get; set; }    // Model ID
     public ushort UnknownR { get; set; }      // Unknown / placeholder
-
-    public UnitVisualIndex() {}
 
     public void Read(BinaryReader reader)
     {
@@ -118,8 +126,14 @@ public class UnitVisualIndex : IReadWrite
     }
 }
 
-public class UnitVoiceIndex : IReadWrite
+public class UnitVoiceIndex(INameTable nameTable, int id) : IReadWrite, INameable
 {
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.Enemy, id);
+        set => nameTable.SetName(NameType.Enemy, id, value ?? string.Empty);
+    }
+    
     public byte VoiceID { get; set; }           // Subtract 1 to get voicepack index
     public byte TalkPerson { get; set; }
     public byte VoiceABCValue { get; set; }
@@ -130,8 +144,6 @@ public class UnitVoiceIndex : IReadWrite
 
     public ushort[] TalkItem { get; set; }      // 4 entries
     public ushort[] TalkItemRare { get; set; }  // 4 entries
-
-    public UnitVoiceIndex() {}
 
     public void Read(BinaryReader reader)
     {
@@ -170,6 +182,24 @@ public class UnitVoiceIndex : IReadWrite
     }
 }
 
+public class ElementalAffinitiesEnemy(INameTable nameTable, int id) : ElementalAffinities, INameable
+{
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.Enemy, id);
+        set => nameTable.SetName(NameType.Enemy, id, value ?? string.Empty);
+    }
+}
+
+public class ElementalAffinitiesPersona(INameTable nameTable, int id) : ElementalAffinities, INameable
+{
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.Persona, id);
+        set => nameTable.SetName(NameType.Persona, id, value ?? string.Empty);
+    }
+}
+
 public class ElementalAffinities : IReadWrite
 {
     public AffinityBitfield PhysAffinity { get; set; }
@@ -192,8 +222,6 @@ public class ElementalAffinities : IReadWrite
     public AffinityBitfield RageAffinity { get; set; }
     public AffinityBitfield DespairAffinity { get; set; }
     public AffinityBitfield BrainwashAffinity { get; set; }
-
-    public ElementalAffinities() {}
 
     public void Read(BinaryReader reader)
     {
@@ -278,8 +306,14 @@ public enum AffinityFlags : byte
     DoubleAilmentChance = 1 << 7  // was bit 0
 }
 
-public class EnemyUnitStats : IReadWrite
+public class EnemyUnitStats(INameTable nameTable, int id) : IReadWrite, INameable
 {
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.Enemy, id);
+        set => nameTable.SetName(NameType.Enemy, id, value ?? string.Empty);
+    }
+
     public UnitFlags Flags { get; set; }               // Flags
     public ArcanaID Arcana { get; set; }              // Arcana
     public byte RESERVE_05 { get; set; }              // RESERVE
@@ -294,10 +328,6 @@ public class EnemyUnitStats : IReadWrite
     public datEnemyItemTable[] DropTables { get; set; }   // Item Drop List (4)
     public datEnemyEventItemTable EventDrop { get; set; } // Event Item Drop
     public datEnemyAttackTable AttackDamage { get; set; } // Attack Attributes
-
-    public EnemyUnitStats()
-    {
-    }
 
     public void Read(BinaryReader reader)
     {
