@@ -52,6 +52,8 @@ public class PersonaTable : IReadWrite
         
         PersonaPartyPersonasSegment.Write(writer);
         writer.BaseStream.AlignStream();
+        
+        writer.BaseStream.SetLength(writer.BaseStream.Position);
     }
 }
 
@@ -103,7 +105,15 @@ public class PersonaPartyPersonas : IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write((ushort)_member);
+        writer.Write(_levelCount);
+        writer.Write((byte)0); // padding/mystery byte
+
+        for (int i = 0; i < _personaSkill.Length; i++)
+            _personaSkill[i].Write(writer);
+
+        for (int i = 0; i < _statGain.Length; i++)
+            _statGain[i].Write(writer);
     }
 
     public class PersonaSkillEntry
@@ -117,6 +127,13 @@ public class PersonaPartyPersonas : IReadWrite
             _level = br.ReadByte();
             _flags = (LearnableFlags)br.ReadByte();
             _data = new(br);
+        }
+        
+        public void Write(BinaryWriter writer)
+        {
+            writer.Write(_level);
+            writer.Write((byte)_flags);
+            _data.Write(writer);
         }
     }
 }
@@ -139,7 +156,8 @@ public partial class PersonaLevelUpThresholds : ReactiveObject, IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        for (int i = 0; i < _expThresholds.Length; i++)
+            writer.Write(_expThresholds[i]);
     }
 }
 
@@ -159,6 +177,13 @@ public partial class PersonaSkillsAndStatGrowth : ReactiveObject, IReadWrite
         [Reactive] private byte _levelsDelta = br.ReadByte();
         [Reactive] private LearnableFlags _flags = (LearnableFlags)br.ReadByte();
         [Reactive] private PersonaSkillData _data = new(br);
+        
+        public void Write(BinaryWriter writer)
+        {
+            writer.Write(_levelsDelta);
+            writer.Write((byte)_flags);
+            _data.Write(writer);
+        }
     }
 
     public void Read(BinaryReader reader)
@@ -172,7 +197,11 @@ public partial class PersonaSkillsAndStatGrowth : ReactiveObject, IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        _wStatDist.Write(writer);
+        writer.Write(_padding);
+    
+        for (int i = 0; i < _personaSkills.Length; i++)
+            _personaSkills[i].Write(writer);
     }
 }
 
@@ -188,6 +217,11 @@ public partial class PersonaSkillData : ReactiveObject
         Data = br.ReadInt16();
         Trait = (BattleTrait)Data;
         Skill = (BattleSkill)Data;
+    }
+    
+    public void Write(BinaryWriter writer)
+    {
+        writer.Write(_data);
     }
 }
 
@@ -209,14 +243,20 @@ public partial class PersonaStats : ReactiveObject, IReadWrite
         _arcana = (ArcanaID)reader.ReadByte();
         _level = reader.ReadByte();
         _stats = new(reader);
-        _padding = reader.ReadByte();   // bitfield placeholder
+        _padding = reader.ReadByte();
         _inherit = (PersonaInherit)reader.ReadInt16();
         _unknown = reader.ReadUInt16();
     }
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write((ushort)_flags);
+        writer.Write((byte)_arcana);
+        writer.Write(_level);
+        _stats.Write(writer);
+        writer.Write(_padding);
+        writer.Write((short)_inherit);
+        writer.Write(_unknown);
     }
 }
 
@@ -228,6 +268,15 @@ public partial class Stats(BinaryReader br) : ReactiveObject
     [Reactive] private byte _endurance = br.ReadByte();
     [Reactive] private byte _agility = br.ReadByte();
     [Reactive] private byte _luck = br.ReadByte();
+    
+    public void Write(BinaryWriter writer)
+    {
+        writer.Write(_strength);
+        writer.Write(_magic);
+        writer.Write(_endurance);
+        writer.Write(_agility);
+        writer.Write(_luck);
+    }
 }
 
 [Flags]
