@@ -7,13 +7,19 @@ namespace HaruEditor.Core.Tables.P5R;
 
 public class ItemTable : IReadWrite
 {
-    private readonly INameTable _nameTable;
-    
     public ItemTable(INameTable nameTable, string file) : this(nameTable, File.OpenRead(file), true) {}
     
-    public ItemTable(INameTable nameTable, Stream stream, bool ownsStream)
+    public ItemTable(INameTable _nameTable, Stream stream, bool ownsStream)
     {
-        _nameTable = nameTable;
+        ItemAccessorySegment = new(_nameTable);
+        ItemArmorSegment = new(_nameTable);
+        ItemConsumableSegment = new(_nameTable);
+        ItemKeyItemSegment = new(_nameTable);
+        ItemMaterialSegment = new(_nameTable);
+        ItemMeleeWeaponSegment = new(_nameTable);
+        ItemOutfitSegment = new(_nameTable);
+        ItemSkillCardSegment = new(_nameTable);
+        ItemRangedWeaponSegment = new(_nameTable);
         using var reader = new BigEndianBinaryReader(stream, ownsStream);
         Read(reader);
     }
@@ -31,39 +37,30 @@ public class ItemTable : IReadWrite
     
     public void Read(BinaryReader reader)
     {
-        ItemAccessorySegment = new(_nameTable);
         ItemAccessorySegment.Read(reader);
         reader.BaseStream.AlignStream();
 
-        ItemArmorSegment = new(_nameTable);
         ItemArmorSegment.Read(reader);
         reader.BaseStream.AlignStream();
 
-        ItemConsumableSegment = new(_nameTable);
         ItemConsumableSegment.Read(reader);
         reader.BaseStream.AlignStream();
 
-        ItemKeyItemSegment = new(_nameTable);
         ItemKeyItemSegment.Read(reader);
         reader.BaseStream.AlignStream();
 
-        ItemMaterialSegment = new(_nameTable);
         ItemMaterialSegment.Read(reader);
         reader.BaseStream.AlignStream();
 
-        ItemMeleeWeaponSegment = new(_nameTable);
         ItemMeleeWeaponSegment.Read(reader);
         reader.BaseStream.AlignStream();
 
-        ItemOutfitSegment = new(_nameTable);
         ItemOutfitSegment.Read(reader);
         reader.BaseStream.AlignStream();
 
-        ItemSkillCardSegment = new(_nameTable);
         ItemSkillCardSegment.Read(reader);
         reader.BaseStream.AlignStream();
 
-        ItemRangedWeaponSegment = new(_nameTable);
         ItemRangedWeaponSegment.Read(reader);
         reader.BaseStream.AlignStream();
         

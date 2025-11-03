@@ -16,20 +16,21 @@ namespace HaruEditor.Core.Tables.P5R;
 
 public class SkillTable : IReadWrite
 {
-    public SkillTable() {}
+    public SkillTable(INameTable nameTable, string skillFile) : this(nameTable, File.OpenRead(skillFile), true) {}
 
-    public SkillTable(string skillFile) : this(File.OpenRead(skillFile), true) {}
-
-    public SkillTable(Stream stream, bool ownsStream)
+    public SkillTable(INameTable nameTable, Stream stream, bool ownsStream)
     {
+        SkillElementSegment = new(nameTable);
+        ActiveSkillSegment = new(nameTable);
+        TraitSegment = new(nameTable);
         using var reader = new BigEndianBinaryReader(stream, ownsStream);
         Read(reader);
     }
 
-    public SkillElementSegment SkillElementSegment { get; set; } = [];
-    public ActiveSkillSegment ActiveSkillSegment { get; set; } = [];
+    public SkillElementSegment SkillElementSegment { get; set; }
+    public ActiveSkillSegment ActiveSkillSegment { get; set; }
     public TechnicalComboMapSegment TechnicalComboMapSegment { get; set; } = [];
-    public TraitSegment TraitSegment { get; set; } = [];
+    public TraitSegment TraitSegment { get; set; }
     public void Read(BinaryReader reader)
     {
         SkillElementSegment.Read(reader);
@@ -63,12 +64,12 @@ public class SkillTable : IReadWrite
     }
 }
 
-public class SkillElementSegment : BaseSegment<SkillElement>
+public class SkillElementSegment(INameTable nameTable) : BaseSegment<SkillElement>(nameTable)
 {
     public override uint ItemSize { get; } = 0x8;
 }
 
-public class ActiveSkillSegment : BaseSegment<ActiveSkill>
+public class ActiveSkillSegment(INameTable nameTable) : BaseSegment<ActiveSkill>(nameTable)
 {
     public override uint ItemSize { get; } = 0x30;
 }
@@ -78,13 +79,19 @@ public class TechnicalComboMapSegment : BaseSegment<TechnicalComboMap>
     public override uint ItemSize { get; } = 0x28;
 }
 
-public class TraitSegment : BaseSegment<Trait>
+public class TraitSegment(INameTable nameTable) : BaseSegment<Trait>(nameTable)
 {
     public override uint ItemSize { get; } = 0x3C;
 }
 
-public partial class Trait : ReactiveObject, IReadWrite
+public partial class Trait(INameTable nameTable, int id) : ReactiveObject, IReadWrite, INameable
 {
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.Trait, id);
+        set => nameTable.SetName(NameType.Trait, id, value ?? string.Empty);
+    }
+    
     [Reactive] [property: IgnoreDataMember] private int _id;
     [Reactive] private ushort _ord;
     [Reactive] private ushort _field2;
@@ -93,8 +100,6 @@ public partial class Trait : ReactiveObject, IReadWrite
     [Reactive] private float _effectSize;
     [Reactive] private int[] _traitEx = new int[10];
     [Reactive] private TraitFlags _traitFlags;
-
-    public Trait() {}
 
     public void Read(BinaryReader reader)
     {
@@ -177,28 +182,14 @@ public partial class TechnicalComboMap : ReactiveObject, IReadWrite
     }
 }
 
-[Flags]
-public enum AilmentStatus : uint
+public partial class ActiveSkill(INameTable nameTable, int id) : ReactiveObject, IReadWrite, INameable
 {
-    Burn        = 1 << 0,   // Bit 0
-    Freeze      = 1 << 1,   // Bit 1
-    Shock       = 1 << 2,   // Bit 2
-    Dizzy       = 1 << 3,   // Bit 3
-    Confuse     = 1 << 4,   // Bit 4
-    Fear        = 1 << 5,   // Bit 5
-    Forget      = 1 << 6,   // Bit 6
-    Hunger      = 1 << 7,   // Bit 7
-    Sleep       = 1 << 8,   // Bit 8
-    Rage        = 1 << 9,   // Bit 9
-    Despair     = 1 << 10,  // Bit 10
-    Brainwash   = 1 << 11,  // Bit 11
-
-    // "Other ailments" occupies bits 12–31
-    OtherAilmentsMask = 0xFFFFF000  // 20 bits starting from bit 12
-}
-
-public partial class ActiveSkill : ReactiveObject, IReadWrite
-{
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.Skill, id);
+        set => nameTable.SetName(NameType.Skill, id, value ?? string.Empty);
+    }
+    
     [Reactive] [property: IgnoreDataMember] private int _id;
     [Reactive] private byte _unknownR;
     [Reactive] private Skill_Condition _condition;
@@ -244,8 +235,6 @@ public partial class ActiveSkill : ReactiveObject, IReadWrite
     [Reactive] private byte _critChance;
     [Reactive] private byte _forItem;
     [Reactive] private byte _unknown8;
-    
-    public ActiveSkill() {}
 
     public void Read(BinaryReader reader)
     {
@@ -347,118 +336,23 @@ public partial class ActiveSkill : ReactiveObject, IReadWrite
 [Flags]
 public enum ValidTargets : byte
 {
-    //None = 0,
     Enemies = 1 << 0,
     Allies = 1 << 1
 }
 
-[Flags]
-public enum Effect1 : byte
+public partial class SkillElement(INameTable nameTable, int id) : ReactiveObject, IReadWrite, INameable
 {
-    //None = 0,
-    Counter = 1 << 0,
-    Mouse = 1 << 1,
-    Gluttony = 1 << 2,
-    KnockDown = 1 << 3,
-    Unconscious = 1 << 4,
-    WeakToAllElements = 1 << 5,
-    Jealousy = 1 << 6,
-    Wrath = 1 << 7
-}
-
-[Flags]
-public enum Effect2 : byte
-{
-    //None = 0,
-    Lust = 1 << 0,
-    Panic = 1 << 1,
-    Berserk = 1 << 2,
-    Desperation = 1 << 3,
-    Brainwash = 1 << 4,
-    Despair = 1 << 5,
-    Rage = 1 << 6,
-    Sleep = 1 << 7
-}
-
-[Flags]
-public enum Effect3 : byte
-{
-    //None = 0,
-    Hunger = 1 << 0,
-    Forget = 1 << 1,
-    Fear = 1 << 2,
-    Confuse = 1 << 3,
-    Dizzy = 1 << 4,
-    Shock = 1 << 5,
-    Freeze = 1 << 6,
-    Burn = 1 << 7
-}
-
-[Flags]
-public enum Effect4 : byte
-{
-    //None = 0,
-    CoverPsy = 1 << 0,
-    CoverNuke = 1 << 1,
-    CoverWind = 1 << 2,
-    CoverElec = 1 << 3,
-    CoverIce = 1 << 4,
-    CoverFire = 1 << 5,
-    InstakillShield = 1 << 6,
-    BreakMagicShield = 1 << 7
-}
-
-[Flags]
-public enum Effect5 : byte
-{
-    //None = 0,
-    BreakPhysicalShield = 1 << 0,
-    AilmentSusceptibility = 1 << 1,
-    NegatePsyResist = 1 << 2,
-    NegateNukeResist = 1 << 3,
-    NegateWindResist = 1 << 4,
-    NegateElecResist = 1 << 5,
-    NegateIceResist = 1 << 6,
-    NegateFireResist = 1 << 7
-}
-
-[Flags]
-public enum Effect6 : byte
-{
-    //None = 0,
-    MagicShield = 1 << 0,
-    PhysicalShield = 1 << 1,
-    CritWayUp = 1 << 2,
-    CritUp = 1 << 3,
-    RemoveDebuffs = 1 << 4,
-    RemoveBuffs = 1 << 5,
-    Concentrate = 1 << 6,
-    Charge = 1 << 7
-}
-
-[Flags]
-public enum BuffDebuff : byte
-{
-    //None = 0,
-    AccuracyDown = 1 << 0,
-    AccuracyUp = 1 << 1,
-    DefenseDown = 1 << 2,
-    DefenseUp = 1 << 3,
-    EvasionDown = 1 << 4,
-    EvasionUp = 1 << 5,
-    AttackDown = 1 << 6,
-    AttackUp = 1 << 7
-}
-
-public partial class SkillElement : ReactiveObject, IReadWrite
-{
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.Skill, id);
+        set => nameTable.SetName(NameType.Skill, id, value ?? string.Empty);
+    }
+    
     [Reactive] [property: IgnoreDataMember] private int _id;
     [Reactive] private ElementalType _elementalType;
     [Reactive] private Skill_PassiveOrActive _isActive;
     [Reactive] private byte _isInheritable;
     private readonly byte[] _unk1 = new byte[5];
-    
-    public SkillElement() {}
 
     public void Read(BinaryReader reader)
     {
@@ -475,4 +369,116 @@ public partial class SkillElement : ReactiveObject, IReadWrite
         writer.Write(_isInheritable);
         writer.Write(_unk1);
     }
+}
+
+// Enum flags reversed below.
+[Flags]
+public enum Effect1 : byte
+{
+    Counter = 1 << 7,         // 0b10000000
+    Mouse = 1 << 6,           // 0b01000000
+    Gluttony = 1 << 5,        // 0b00100000
+    KnockDown = 1 << 4,       // 0b00010000
+    Unconscious = 1 << 3,     // 0b00001000
+    WeakToAllElements = 1 << 2, // 0b00000100
+    Jealousy = 1 << 1,        // 0b00000010
+    Wrath = 1 << 0             // 0b00000001
+}
+
+[Flags]
+public enum Effect2 : byte
+{
+    Lust = 1 << 7,
+    Panic = 1 << 6,
+    Berserk = 1 << 5,
+    Desperation = 1 << 4,
+    Brainwash = 1 << 3,
+    Despair = 1 << 2,
+    Rage = 1 << 1,
+    Sleep = 1 << 0
+}
+
+[Flags]
+public enum Effect3 : byte
+{
+    Hunger = 1 << 7,
+    Forget = 1 << 6,
+    Fear = 1 << 5,
+    Confuse = 1 << 4,
+    Dizzy = 1 << 3,
+    Shock = 1 << 2,
+    Freeze = 1 << 1,
+    Burn = 1 << 0
+}
+
+[Flags]
+public enum Effect4 : byte
+{
+    CoverPsy = 1 << 7,
+    CoverNuke = 1 << 6,
+    CoverWind = 1 << 5,
+    CoverElec = 1 << 4,
+    CoverIce = 1 << 3,
+    CoverFire = 1 << 2,
+    InstakillShield = 1 << 1,
+    BreakMagicShield = 1 << 0
+}
+
+[Flags]
+public enum Effect5 : byte
+{
+    BreakPhysicalShield = 1 << 7,
+    AilmentSusceptibility = 1 << 6,
+    NegatePsyResist = 1 << 5,
+    NegateNukeResist = 1 << 4,
+    NegateWindResist = 1 << 3,
+    NegateElecResist = 1 << 2,
+    NegateIceResist = 1 << 1,
+    NegateFireResist = 1 << 0
+}
+
+[Flags]
+public enum Effect6 : byte
+{
+    MagicShield = 1 << 7,
+    PhysicalShield = 1 << 6,
+    CritWayUp = 1 << 5,
+    CritUp = 1 << 4,
+    RemoveDebuffs = 1 << 3,
+    RemoveBuffs = 1 << 2,
+    Concentrate = 1 << 1,
+    Charge = 1 << 0
+}
+
+[Flags]
+public enum BuffDebuff : byte
+{
+    AccuracyDown = 1 << 7,
+    AccuracyUp = 1 << 6,
+    DefenseDown = 1 << 5,
+    DefenseUp = 1 << 4,
+    EvasionDown = 1 << 3,
+    EvasionUp = 1 << 2,
+    AttackDown = 1 << 1,
+    AttackUp = 1 << 0
+}
+
+[Flags]
+public enum AilmentStatus : uint
+{
+    Burn        = 1u << 31,   // Bit 0 → Bit 31
+    Freeze      = 1u << 30,   // Bit 1 → Bit 30
+    Shock       = 1u << 29,   // Bit 2 → Bit 29
+    Dizzy       = 1u << 28,   // Bit 3 → Bit 28
+    Confuse     = 1u << 27,   // Bit 4 → Bit 27
+    Fear        = 1u << 26,   // Bit 5 → Bit 26
+    Forget      = 1u << 25,   // Bit 6 → Bit 25
+    Hunger      = 1u << 24,   // Bit 7 → Bit 24
+    Sleep       = 1u << 23,   // Bit 8 → Bit 23
+    Rage        = 1u << 22,   // Bit 9 → Bit 22
+    Despair     = 1u << 21,   // Bit 10 → Bit 21
+    Brainwash   = 1u << 20,   // Bit 11 → Bit 20
+
+    // Other ailments occupy bits 12–31 in original, reversed → bits 0–19
+    OtherAilmentsMask = 0x000FFFFF // 20 bits starting from bit 0
 }
