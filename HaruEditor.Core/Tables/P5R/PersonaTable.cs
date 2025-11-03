@@ -16,12 +16,13 @@ public class PersonaTable : IReadWrite
         using var reader = new BigEndianBinaryReader(stream, ownsStream);
         PersonaStatsSegment = new(nameTable);
         PersonaSkillsAndStatGrowthsSegment = new(nameTable);
+        PersonaLevelUpThresholdsSegment = new(nameTable);
         Read(reader);
     }
 
     public PersonaStatsSegment PersonaStatsSegment { get; set; }
     public PersonaSkillsAndStatGrowthsSegment PersonaSkillsAndStatGrowthsSegment { get; set; }
-    public PersonaLevelUpThresholdsSegment PersonaLevelUpThresholdsSegment { get; set; } = [];
+    public PersonaLevelUpThresholdsSegment PersonaLevelUpThresholdsSegment { get; set; }
     public PersonaPartyPersonasSegment PersonaPartyPersonasSegment { get; set; } = [];
     
     public void Read(BinaryReader reader)
@@ -67,7 +68,7 @@ public class PersonaSkillsAndStatGrowthsSegment(INameTable nameTable) : BaseSegm
     public override uint ItemSize { get; } = 0x46;
 }
 
-public class PersonaLevelUpThresholdsSegment : BaseSegment<PersonaLevelUpThresholds>
+public class PersonaLevelUpThresholdsSegment(INameTable nameTable) : BaseSegment<PersonaLevelUpThresholds>(nameTable)
 {
     public override uint ItemSize { get; } = 0x188;
 }
@@ -139,13 +140,15 @@ public partial class PersonaPartyPersonas : ReactiveObject, IReadWrite
     }
 }
 
-public partial class PersonaLevelUpThresholds : ReactiveObject, IReadWrite
+public partial class PersonaLevelUpThresholds(INameTable nameTable, int id) : ReactiveObject, IReadWrite, INameable
 {
-    [Reactive] private int[] _expThresholds = new int[98];
-
-    public PersonaLevelUpThresholds()
+    public string? Name
     {
+        get => nameTable.GetName(NameType.PartyFirst, id);
+        set => nameTable.SetName(NameType.PartyFirst, id, value ?? string.Empty);
     }
+    
+    [Reactive] private int[] _expThresholds = new int[98];
 
     public void Read(BinaryReader reader)
     {
