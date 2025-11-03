@@ -22,6 +22,8 @@ public class UnitTable : IReadWrite
     public PersonaElementalAffinitiesSegment PersonaElementalAffinitiesSegment { get; set; } = [];
     public UnitVoiceIndexSegment UnitVoiceIndexSegment { get; set; } = [];
     public UnitVisualIndexSegment UnitVisualIndexSegment { get; set; } = [];
+    
+    [Browsable(false)]
     public UnknownSegment UnknownSegment { get; set; } = [];
     
     public void Read(BinaryReader reader)

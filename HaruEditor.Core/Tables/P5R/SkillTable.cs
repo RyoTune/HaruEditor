@@ -26,59 +26,59 @@ public class SkillTable : IReadWrite
         Read(reader);
     }
 
-    public SkillElementsSegment SkillElementsSegment { get; set; } = [];
-    public ActiveSkillsSegment ActiveSkillsSegment { get; set; } = [];
-    public TechnicalComboMapsSegment TechnicalComboMapsSegment { get; set; } = [];
-    public TraitsSegment TraitsSegment { get; set; } = [];
+    public SkillElementSegment SkillElementSegment { get; set; } = [];
+    public ActiveSkillSegment ActiveSkillSegment { get; set; } = [];
+    public TechnicalComboMapSegment TechnicalComboMapSegment { get; set; } = [];
+    public TraitSegment TraitSegment { get; set; } = [];
     public void Read(BinaryReader reader)
     {
-        SkillElementsSegment.Read(reader);
+        SkillElementSegment.Read(reader);
         reader.BaseStream.AlignStream();
 
-        ActiveSkillsSegment.Read(reader);
+        ActiveSkillSegment.Read(reader);
         reader.BaseStream.AlignStream();
 
-        TechnicalComboMapsSegment.Read(reader);
+        TechnicalComboMapSegment.Read(reader);
         reader.BaseStream.AlignStream();
 
-        TraitsSegment.Read(reader);
+        TraitSegment.Read(reader);
         reader.BaseStream.AlignStream();
     }
 
     public void Write(BinaryWriter writer)
     {
-        SkillElementsSegment.Write(writer);
+        SkillElementSegment.Write(writer);
         writer.BaseStream.AlignStream();
 
-        ActiveSkillsSegment.Write(writer);
+        ActiveSkillSegment.Write(writer);
         writer.BaseStream.AlignStream();
 
-        TechnicalComboMapsSegment.Write(writer);
+        TechnicalComboMapSegment.Write(writer);
         writer.BaseStream.AlignStream();
 
-        TraitsSegment.Write(writer);
+        TraitSegment.Write(writer);
         writer.BaseStream.AlignStream();
         
         writer.BaseStream.SetLength(writer.BaseStream.Position);
     }
 }
 
-public class SkillElementsSegment : BaseSegment<SkillElement>
+public class SkillElementSegment : BaseSegment<SkillElement>
 {
     public override uint ItemSize { get; } = 0x8;
 }
 
-public class ActiveSkillsSegment : BaseSegment<ActiveSkill>
+public class ActiveSkillSegment : BaseSegment<ActiveSkill>
 {
     public override uint ItemSize { get; } = 0x30;
 }
 
-public class TechnicalComboMapsSegment : BaseSegment<TechnicalComboMap>
+public class TechnicalComboMapSegment : BaseSegment<TechnicalComboMap>
 {
     public override uint ItemSize { get; } = 0x28;
 }
 
-public class TraitsSegment : BaseSegment<Trait>
+public class TraitSegment : BaseSegment<Trait>
 {
     public override uint ItemSize { get; } = 0x3C;
 }
