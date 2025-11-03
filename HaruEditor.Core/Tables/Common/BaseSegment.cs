@@ -19,7 +19,7 @@ public abstract class BaseSegment<TItem> : List<TItem>, ITableSegment<TItem>, IR
 
     public virtual void Write(BinaryWriter writer)
     {
-        writer.Write(Count * ItemSize);
+        writer.Write((uint)(Count * ItemSize));
         foreach (var item in this) item.Write(writer);
     }
 }

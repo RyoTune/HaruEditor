@@ -94,6 +94,8 @@ public class ItemTable : IReadWrite
         
         UnknownSegment.Write(writer);
         writer.BaseStream.AlignStream();
+        
+        writer.BaseStream.SetLength(writer.BaseStream.Position);
     }
 }
 
@@ -182,7 +184,17 @@ public class ItemMaterial : IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write((uint)ItemKind);
+        writer.Write(MenuSorting);
+        writer.Write(Flag);
+        writer.Write(Value);
+        writer.Write(PurchasePrice);
+        writer.Write(SellPrice);
+        writer.Write((byte)MonthAvailable);
+        writer.Write(DayAvailable);
+        writer.Write(RESERVE_16);
+        for (int i = 0; i < 5; i++)
+            writer.Write(Material[i]);
     }
 }
 
@@ -278,7 +290,38 @@ public class ItemRangedWeapon : IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write((uint)ItemKind);
+        writer.Write(WeaponFieldMenuSorting);
+        writer.Write(WeaponShopMenuSorting);
+        writer.Write((uint)Users);
+        writer.Write((ushort)IsItAvailable2);
+        writer.Write((byte)Attribute);
+        writer.Write(RESERVE_0F);
+        writer.Write(Attack);
+        writer.Write(Accuracy);
+        writer.Write(Rounds);
+        Stats.Write(writer);
+        writer.Write(RESERVE_STAT);
+        for (int i = 0; i < 3; i++)
+            writer.Write((ushort)Effect[i]);
+        writer.Write(FIELD_22);
+        writer.Write(IwaisUpgradeRank);
+        writer.Write(RESERVE_26);
+        writer.Write(PurchasePrice);
+        writer.Write(SellPrice);
+        writer.Write((byte)MonthAvailable);
+        writer.Write(DayAvailable);
+
+        LongBarrelEnhancement.Write(writer);
+        GigaBarrelEnhancement.Write(writer);
+        PowerReceiver.Write(writer);
+        HighPowerReceiver.Write(writer);
+        MegaPowerReceiver.Write(writer);
+        FireCamo.Write(writer);
+        ElectricCamo.Write(writer);
+        IceCamo.Write(writer);
+
+        writer.Write(RESERVE_82);
     }
 }
 
@@ -299,7 +342,16 @@ public class GunEnhancement
         Attack1 = reader.ReadUInt16();
         Accuracy1 = reader.ReadUInt16();
         Rounds1 = reader.ReadUInt16();
-        Effect = (GearEffect)reader.ReadUInt16(); // assume GearEffect constructor exists
+        Effect = (GearEffect)reader.ReadUInt16();
+    }
+    
+    public void Write(BinaryWriter writer)
+    {
+        writer.Write((ushort)RangedItemUpgradable2);
+        writer.Write(Attack1);
+        writer.Write(Accuracy1);
+        writer.Write(Rounds1);
+        writer.Write((ushort)Effect);
     }
 }
 
@@ -337,7 +389,14 @@ public class ItemSkillCard : IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write((uint)ItemKind);
+        writer.Write(MenuSorting);
+        writer.Write(Flag);
+        writer.Write((ushort)Skill);
+        writer.Write(Level);
+        writer.Write(Value);
+        writer.Write(PurchasePrice);
+        writer.Write(SellPrice);
     }
 }
 
@@ -373,7 +432,7 @@ public class ItemOutfit : IReadWrite
         Users = (EquippableUsers)reader.ReadUInt32();
 
         for (int i = 0; i < 3; i++)
-            Effect[i] = (GearEffect)reader.ReadUInt16(); // assume GearEffect constructor exists
+            Effect[i] = (GearEffect)reader.ReadUInt16();
 
         PurchasePrice = reader.ReadUInt32();
         SellPrice = reader.ReadUInt32();
@@ -387,8 +446,20 @@ public class ItemOutfit : IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write((uint)ItemKind);
+        writer.Write(FieldMenuSorting);
+        writer.Write(ShopMenuSorting);
+        writer.Write((uint)Users);
+        for (int i = 0; i < 3; i++)
+            writer.Write((ushort)Effect[i]);
+        writer.Write(PurchasePrice);
+        writer.Write(SellPrice);
+        writer.Write((byte)MonthAvailable);
+        writer.Write(DayAvailable);
+        writer.Write(RESERVE_1);
+        writer.Write(RESERVE_2);
     }
+
 }
 
 public class ItemMeleeWeapon : IReadWrite
@@ -459,8 +530,27 @@ public class ItemMeleeWeapon : IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write((uint)ItemKind);
+        writer.Write(WeaponFieldMenuSorting);
+        writer.Write(WeaponShopMenuSorting);
+        writer.Write((uint)Users);
+        writer.Write((ushort)IsItAvailable);
+        writer.Write(RESERVE);
+        writer.Write(Attack);
+        writer.Write(Accuracy);
+        Stats.Write(writer);
+        writer.Write(RESERVE_STAT);
+        for (int i = 0; i < 3; i++)
+            writer.Write((ushort)Effect[i]);
+        writer.Write(Level);
+        writer.Write(Value);
+        writer.Write(PurchasePrice);
+        writer.Write(SellPrice);
+        writer.Write((byte)MonthAvailable);
+        writer.Write(DayAvailable);
+        writer.Write(UNKNOWN_2E);
     }
+
 }
 
 public class ItemKeyItem : IReadWrite
@@ -485,7 +575,10 @@ public class ItemKeyItem : IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write((uint)ItemKind);
+        writer.Write(MenuSorting);
+        writer.Write(Flag);
+        writer.Write(RESERVE_1A);
     }
 }
 
@@ -536,7 +629,19 @@ public class ItemConsumable : IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write((uint)ItemKind);
+        writer.Write(MenuSorting);
+        writer.Write(Flag);
+        writer.Write((ushort)Availability);
+        writer.Write((ushort)Skill);
+        writer.Write(RESERVE_0E);
+        writer.Write(PurchasePrice);
+        writer.Write(SellPrice);
+        writer.Write((byte)MonthAvailable);
+        writer.Write(DayAvailable);
+        writer.Write(RESERVE_1A);
+        for (int i = 0; i < 5; i++)
+            writer.Write(Material[i]);
     }
 }
 
@@ -604,7 +709,25 @@ public class ItemArmor : IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write((uint)ItemKind);
+        writer.Write(WeaponFieldMenuSorting);
+        writer.Write(WeaponShopMenuSorting);
+        writer.Write((uint)Users);
+        writer.Write((ushort)IsItAvailable3);
+        writer.Write(ArmorDefense);
+        writer.Write(ArmorEvasion);
+        Stats.Write(writer);
+        writer.Write(RESERVE_STAT);
+        for (int i = 0; i < 3; i++)
+            writer.Write((ushort)Effect[i]);
+        writer.Write(Level);
+        writer.Write(Value);
+        writer.Write(RESERVE_1E);
+        writer.Write(PurchasePrice);
+        writer.Write(SellPrice);
+        writer.Write((byte)MonthAvailable);
+        writer.Write(DayAvailable);
+        writer.Write(Unknown);
     }
 }
 
@@ -672,7 +795,25 @@ public class ItemAccessory : IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write((uint)ItemKind);
+        writer.Write(WeaponFieldMenuSorting);
+        writer.Write(WeaponShopMenuSorting);
+        writer.Write((uint)Users);
+        writer.Write((ushort)IsItAvailable4);
+        Stats.Write(writer);
+        writer.Write(RESERVE_STAT);
+        for (int i = 0; i < 3; i++)
+            writer.Write((ushort)Effect[i]);
+        writer.Write(Level);
+        writer.Write(Value);
+        writer.Write(RESERVE_1E);
+        writer.Write(PurchasePrice);
+        writer.Write(SellPrice);
+        writer.Write((byte)MonthAvailable);
+        writer.Write(DayAvailable);
+        writer.Write(RESERVE_2A);
+        for (int i = 0; i < 5; i++)
+            writer.Write(Material[i]);
     }
 }
 

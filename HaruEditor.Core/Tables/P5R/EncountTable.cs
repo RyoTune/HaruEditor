@@ -37,16 +37,18 @@ public class EncountTable : IReadWrite
         reader.BaseStream.AlignStream();
     }
 
-    public void Write(BinaryWriter reader)
+    public void Write(BinaryWriter writer)
     {
-        EnemyEncountersSegment.Write(reader);
-        reader.BaseStream.AlignStream();
+        EnemyEncountersSegment.Write(writer);
+        writer.BaseStream.AlignStream();
         
-        ForcedPartiesSegment.Write(reader);
-        reader.BaseStream.AlignStream();
+        ForcedPartiesSegment.Write(writer);
+        writer.BaseStream.AlignStream();
         
-        ChallengeBattlesSegment.Write(reader);
-        reader.BaseStream.AlignStream();
+        ChallengeBattlesSegment.Write(writer);
+        writer.BaseStream.AlignStream();
+        
+        writer.BaseStream.SetLength(writer.BaseStream.Position);
     }
 }
 
@@ -70,11 +72,14 @@ public partial class ChallengeBattle : ReactiveObject, IReadWrite
     [Reactive] private ushort _category;
     [Reactive] private ushort _categoryIdx;
     [Reactive] private uint _flag;
+    private uint _unk1;
 
     [Reactive] private ushort _turnBonusCount;
+    private ushort _unk2;
     [Reactive] private uint _turnBonus;
 
     [Reactive] private BonusEntry[] _bonus = new BonusEntry[5];
+    private uint[] _unk3 = new uint[5];
     [Reactive] private uint[] _waveEncounter = new uint[5];
 
     [Reactive] private uint _level;
@@ -90,11 +95,11 @@ public partial class ChallengeBattle : ReactiveObject, IReadWrite
     {
         _category = reader.ReadUInt16();
         _categoryIdx = reader.ReadUInt16();
-        reader.ReadUInt32(); // _1 (discarded)
+        _unk1 = reader.ReadUInt32();
         _flag = reader.ReadUInt32();
 
         _turnBonusCount = reader.ReadUInt16();
-        reader.ReadUInt16(); // _2 (discarded)
+        _unk2 = reader.ReadUInt16();
         _turnBonus = reader.ReadUInt32();
 
         for (var i = 0; i < 5; i++)
@@ -104,7 +109,7 @@ public partial class ChallengeBattle : ReactiveObject, IReadWrite
             _waveEncounter[i] = reader.ReadUInt32();
 
         for (var i = 0; i < 5; i++)
-            reader.ReadUInt32(); // _3[i] (discarded)
+            _unk3[i] = reader.ReadUInt32();
 
         _level = reader.ReadUInt32();
         _iconCount = reader.ReadUInt32();
@@ -115,7 +120,29 @@ public partial class ChallengeBattle : ReactiveObject, IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write(_category);
+        writer.Write(_categoryIdx);
+        writer.Write(_unk1);
+        writer.Write(_flag);
+
+        writer.Write(_turnBonusCount);
+        writer.Write(_unk2);
+        writer.Write(_turnBonus);
+
+        for (var i = 0; i < 5; i++)
+            _bonus[i].Write(writer);
+
+        for (var i = 0; i < 5; i++)
+            writer.Write(_waveEncounter[i]);
+
+        for (var i = 0; i < 5; i++)
+            writer.Write(_unk3[i]);
+
+        writer.Write(_level);
+        writer.Write(_iconCount);
+
+        for (var i = 0; i < 3; i++)
+            _award[i].Write(writer);
     }
 }
 
@@ -132,21 +159,40 @@ public partial class BonusEntry : ReactiveObject
         _type = br.ReadUInt32();
         _mult = br.ReadSingle();
     }
+    
+    public void Write(BinaryWriter writer)
+    {
+        writer.Write(_target);
+        writer.Write(_type);
+        writer.Write(_mult);
+    }
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public partial class AwardEntry : ReactiveObject
 {
     [Reactive] private uint _requiredScore;
+    private ushort _unk1;
+    private ushort _unk2;
+    private ushort _unk3;
     [Reactive] private ushort _itemId;
 
     public AwardEntry(BinaryReader br)
     {
         _requiredScore = br.ReadUInt32();
-        br.ReadUInt16(); // _4 (discarded)
-        br.ReadUInt16(); // _5 (discarded)
-        br.ReadUInt16(); // _6 (discarded)
+        _unk1 = br.ReadUInt16();
+        _unk2 = br.ReadUInt16();
+        _unk3 = br.ReadUInt16();
         _itemId = br.ReadUInt16();
+    }
+    
+    public void Write(BinaryWriter writer)
+    {
+        writer.Write(_requiredScore);
+        writer.Write(_unk1);
+        writer.Write(_unk2);
+        writer.Write(_unk3);
+        writer.Write(_itemId);
     }
 }
 
@@ -168,7 +214,8 @@ public partial class ForcedParty : ReactiveObject, IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        foreach (var id in _playerID)
+            writer.Write((ushort)id);
     }
 }
 
@@ -235,7 +282,39 @@ public partial class EnemyEncounter : ReactiveObject, IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write((uint)_flags);
+        writer.Write(_field04);
+        writer.Write(_field06);
+
+        foreach (var unit in _units)
+            writer.Write((short)unit);
+
+        writer.Write(_fieldId);
+        writer.Write(_roomId);
+        writer.Write((ushort)_musicId);
+
+        // TRoyalEncounter
+        writer.Write(_extraData.EnemyReplacementData.ReplacementEnemyID);
+        writer.Write(_extraData.EnemyReplacementData.OverallReplacementChance);
+        writer.Write(_extraData.EnemyReplacementData.Slot1Chance);
+        writer.Write(_extraData.EnemyReplacementData.Slot2Chance);
+        writer.Write(_extraData.EnemyReplacementData.Slot3Chance);
+        writer.Write(_extraData.EnemyReplacementData.Slot4Chance);
+        writer.Write(_extraData.EnemyReplacementData.Slot5Chance);
+
+        writer.Write(_extraData.DisasterData.OverallDisasterChance);
+        writer.Write(_extraData.DisasterData.Slot1Chance);
+        writer.Write(_extraData.DisasterData.Slot2Chance);
+        writer.Write(_extraData.DisasterData.Slot3Chance);
+        writer.Write(_extraData.DisasterData.Slot4Chance);
+        writer.Write(_extraData.DisasterData.Slot5Chance);
+        writer.Write(_extraData.DisasterData.MaxDisasterShadows);
+
+        writer.Write(_extraData.Field0f);
+        writer.Write(_extraData.Field10);
+        writer.Write(_extraData.Field11);
+        writer.Write(_extraData.Field12);
+        writer.Write(_extraData.Field13);
     }
 }
 
