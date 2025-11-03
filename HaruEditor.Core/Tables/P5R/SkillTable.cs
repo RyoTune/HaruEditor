@@ -26,57 +26,59 @@ public class SkillTable : IReadWrite
         Read(reader);
     }
 
-    public SkillElements SkillElements { get; set; } = [];
-    public ActiveSkills ActiveSkills { get; set; } = [];
-    public TechnicalComboMaps TechnicalComboMaps { get; set; } = [];
-    public Traits Traits { get; set; } = [];
+    public SkillElementsSegment SkillElementsSegment { get; set; } = [];
+    public ActiveSkillsSegment ActiveSkillsSegment { get; set; } = [];
+    public TechnicalComboMapsSegment TechnicalComboMapsSegment { get; set; } = [];
+    public TraitsSegment TraitsSegment { get; set; } = [];
     public void Read(BinaryReader reader)
     {
-        SkillElements.Read(reader);
+        SkillElementsSegment.Read(reader);
         reader.BaseStream.AlignStream();
 
-        ActiveSkills.Read(reader);
+        ActiveSkillsSegment.Read(reader);
         reader.BaseStream.AlignStream();
 
-        TechnicalComboMaps.Read(reader);
+        TechnicalComboMapsSegment.Read(reader);
         reader.BaseStream.AlignStream();
 
-        Traits.Read(reader);
+        TraitsSegment.Read(reader);
         reader.BaseStream.AlignStream();
     }
 
     public void Write(BinaryWriter writer)
     {
-        SkillElements.Write(writer);
+        SkillElementsSegment.Write(writer);
         writer.BaseStream.AlignStream();
 
-        ActiveSkills.Write(writer);
+        ActiveSkillsSegment.Write(writer);
         writer.BaseStream.AlignStream();
 
-        TechnicalComboMaps.Write(writer);
+        TechnicalComboMapsSegment.Write(writer);
         writer.BaseStream.AlignStream();
 
-        Traits.Write(writer);
+        TraitsSegment.Write(writer);
         writer.BaseStream.AlignStream();
+        
+        writer.BaseStream.SetLength(writer.BaseStream.Position);
     }
 }
 
-public class SkillElements : BaseSegment<SkillElement>
+public class SkillElementsSegment : BaseSegment<SkillElement>
 {
     public override uint ItemSize { get; } = 0x8;
 }
 
-public class ActiveSkills : BaseSegment<ActiveSkill>
+public class ActiveSkillsSegment : BaseSegment<ActiveSkill>
 {
     public override uint ItemSize { get; } = 0x30;
 }
 
-public class TechnicalComboMaps : BaseSegment<TechnicalComboMap>
+public class TechnicalComboMapsSegment : BaseSegment<TechnicalComboMap>
 {
     public override uint ItemSize { get; } = 0x28;
 }
 
-public class Traits : BaseSegment<Trait>
+public class TraitsSegment : BaseSegment<Trait>
 {
     public override uint ItemSize { get; } = 0x3C;
 }
@@ -112,7 +114,16 @@ public partial class Trait : ReactiveObject, IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write(_ord);
+        writer.Write(_field2);
+        writer.Write(_effectRate);
+        writer.Write(_unionEffect);
+        writer.Write(_effectSize);
+
+        foreach (var ex in _traitEx)
+            writer.Write(ex);
+
+        writer.Write((int)_traitFlags);
     }
 }
 
@@ -154,7 +165,15 @@ public partial class TechnicalComboMap : ReactiveObject, IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write((uint)_applicableAilments);
+        writer.Write(_allAffinitiesAreTechnical);
+
+        foreach (var tech in _technicalSkillAffinity)
+            writer.Write((int)tech);
+
+        writer.Write(_damageMultiplier);
+        writer.Write(_unknownR);
+        writer.Write((uint)_requiresKnowingTheHeart);
     }
 }
 
@@ -278,7 +297,50 @@ public partial class ActiveSkill : ReactiveObject, IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write(_unknownR);
+        writer.Write((byte)_condition);
+        writer.Write((byte)_casterEffect1);
+        writer.Write((byte)_casterEffect2);
+        writer.Write(_unknownR2);
+        writer.Write((byte)_placeUsage);
+        writer.Write((byte)_damageStat);
+        writer.Write((byte)_costType);
+        writer.Write(_skillCost);
+        writer.Write(_add2);
+        writer.Write((byte)_physicalOrMagic);
+        writer.Write((byte)_numberOfTargets);
+        writer.Write((byte)_validTargets);
+        writer.Write((byte)_targetRestrictions);
+        writer.Write(_unknown1);
+        writer.Write(_unknown2);
+        writer.Write(_unknown3);
+        writer.Write(_unknown4);
+        writer.Write(_unknown5);
+        writer.Write(_accuracy);
+        writer.Write(_minHits);
+        writer.Write(_maxHits);
+        writer.Write((byte)_hpEffect);
+        writer.Write(_baseDamage);
+        writer.Write((byte)_spEffect);
+        writer.Write(_unknown6);
+        writer.Write(_spAmount);
+        writer.Write((byte)_applyOrCureEffect);
+        writer.Write(_secondaryEffectChance);
+        writer.Write(_unknown7);
+        writer.Write((byte)_effect1);
+        writer.Write((byte)_effect2);
+        writer.Write((byte)_effect3);
+        writer.Write((byte)_effect4);
+        writer.Write((byte)_effect5);
+        writer.Write((byte)_effect6);
+        writer.Write((byte)_buffDebuff);
+        writer.Write(_unknownR3);
+        writer.Write(_reserve2A);
+        writer.Write((byte)_otherBuff);
+        writer.Write((byte)_extraEffect);
+        writer.Write(_critChance);
+        writer.Write(_forItem);
+        writer.Write(_unknown8);
     }
 }
 
@@ -393,7 +455,8 @@ public partial class SkillElement : ReactiveObject, IReadWrite
     [Reactive] [property: IgnoreDataMember] private int _id;
     [Reactive] private ElementalType _elementalType;
     [Reactive] private Skill_PassiveOrActive _isActive;
-    [Reactive] private bool _isInheritable;
+    [Reactive] private byte _isInheritable;
+    private readonly byte[] _unk1 = new byte[5];
     
     public SkillElement() {}
 
@@ -401,12 +464,15 @@ public partial class SkillElement : ReactiveObject, IReadWrite
     {
         ElementalType = (ElementalType)reader.ReadByte();
         IsActive = (Skill_PassiveOrActive)reader.ReadByte();
-        IsInheritable = reader.ReadBoolean();
-        reader.BaseStream.Position += 5;
+        IsInheritable = reader.ReadByte();
+        reader.BaseStream.ReadExactly(_unk1);
     }
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write((byte)_elementalType);
+        writer.Write((byte)_isActive);
+        writer.Write(_isInheritable);
+        writer.Write(_unk1);
     }
 }
