@@ -1,13 +1,18 @@
 using Amicitia.IO.Binary;
+using Amicitia.IO.Streams;
 using AtlusScriptLibrary.Common.Text.Encodings;
-using HaruEditor.Core.Tables.Common;
 
 namespace HaruEditor.Core.Tables.P5R;
 
-public interface INameTable : IReadWrite
+public interface INameTable
 {
     string? GetName(NameType type, int id);
+    
     void SetName(NameType type, int id, string value);
+
+    void Read(Stream stream);
+
+    void Write(Stream stream);
 }
 
 public class NameTableProxy : INameTable
@@ -18,24 +23,26 @@ public class NameTableProxy : INameTable
 
     public void SetName(NameType type, int id, string value) => NameTable?.SetName(type, id, value);
     
-    public void Read(BinaryReader reader) => NameTable?.Read(reader);
+    public void Read(Stream stream) => NameTable?.Read(stream);
 
-    public void Write(BinaryWriter writer) => NameTable?.Write(writer);
+    public void Write(Stream stream) => NameTable?.Write(stream);
 }
 
 public class NameTable : INameTable
 {
     private readonly Dictionary<NameType, List<string>> _nameSections = [];
 
-    public NameTable(string nameTblFile) => LoadTable(nameTblFile);
+    public NameTable(string nameTblFile) => Read(File.OpenRead(nameTblFile));
 
-    public string? GetName(NameType type, int id) => _nameSections[type][id];
+    public string GetName(NameType type, int id) => _nameSections[type][id];
 
     public void SetName(NameType type, int id, string value) => _nameSections[type][id] = value;
 
-    private void LoadTable(string tblFile)
+    public void Read(Stream stream)
     {
-        using var nameTbl = new BinaryObjectReader(tblFile, Endianness.Big, AtlusEncoding.Persona5RoyalEFIGS);
+        using var nameTbl = new BinaryObjectReader(stream, StreamOwnership.Transfer, Endianness.Big,
+            AtlusEncoding.Persona5RoyalEFIGS);
+        
         const int numSections = 38; // 38 for P5R, 34 for P5
         
         for (var i = 0; i < numSections / 2; i++)
@@ -82,14 +89,73 @@ public class NameTable : INameTable
         }
     }
 
-    public void Read(BinaryReader reader)
+    public void Write(Stream stream)
     {
-        throw new NotImplementedException();
-    }
+        using var nameTbl = new BinaryObjectWriter(stream, StreamOwnership.Transfer, Endianness.Big,
+            AtlusEncoding.Persona5RoyalEFIGS);
 
-    public void Write(BinaryWriter writer)
-    {
-        throw new NotImplementedException();
+        const int numSections = 38; // 38 for P5R, 34 for P5
+        for (int i = 0; i < numSections / 2; i++)
+        {
+            var strs = _nameSections[(NameType)i];
+            var ptrs = new List<long>();
+            var fileSizePos = nameTbl.Position;
+            nameTbl.WriteUInt32(0);
+            var numPtrs = strs.Count;
+            var strPtrsPos = nameTbl.Position;
+            for (int j = 0; j < numPtrs; j++)
+            {
+                nameTbl.WriteUInt16(0);
+            }
+            
+            var fileSize = (uint)(nameTbl.Position - fileSizePos) - 4;
+            int targetPadding = (int)((0x10 - nameTbl.Position % 0x10) % 0x10);
+            if (targetPadding > 0)
+            {
+                for (int j = 0; j < targetPadding; j++)
+                {
+                    nameTbl.WriteByte(0);
+                }
+            }
+
+            var basePos = nameTbl.Position;
+            nameTbl.Seek(fileSizePos, SeekOrigin.Begin);
+            nameTbl.WriteUInt32(fileSize);
+            nameTbl.Seek(basePos, SeekOrigin.Begin);
+
+            fileSizePos = nameTbl.Position;
+            
+            nameTbl.WriteUInt32(0);
+            for (int j = 0; j < numPtrs; j++)
+            {
+                ptrs.Add(nameTbl.Position - (fileSizePos + 4));
+                nameTbl.WriteString(StringBinaryFormat.NullTerminated, strs[j]);
+            }
+            
+            fileSize = (uint)(nameTbl.Position - fileSizePos) - 4;
+            
+            targetPadding = (int)((0x10 - nameTbl.Position % 0x10) % 0x10);
+            if (targetPadding > 0)
+            {
+                for (int j = 0; j < targetPadding; j++)
+                {
+                    nameTbl.WriteByte(0);
+                }
+            }
+
+            basePos = nameTbl.Position;
+            
+            nameTbl.Seek(fileSizePos, SeekOrigin.Begin);
+            nameTbl.WriteUInt32(fileSize);
+            
+            nameTbl.Seek(strPtrsPos, SeekOrigin.Begin);
+            for (int j = 0; j < numPtrs; j++)
+            {
+                nameTbl.WriteUInt16((ushort)ptrs[j]);
+            }
+            
+            nameTbl.Seek(basePos, SeekOrigin.Begin);
+        }
     }
 }
 
@@ -114,5 +180,8 @@ public enum NameType
     PartyLast,
     Confidant,
     RangedWeapon,
-    _39
+    Unk1,
+    Unk2,
+    Unk3,
+    Unk4
 }

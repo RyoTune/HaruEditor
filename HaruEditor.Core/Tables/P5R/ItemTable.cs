@@ -9,17 +9,17 @@ public class ItemTable : IReadWrite
 {
     public ItemTable(INameTable nameTable, string file) : this(nameTable, File.OpenRead(file), true) {}
     
-    public ItemTable(INameTable _nameTable, Stream stream, bool ownsStream)
+    public ItemTable(INameTable nameTable, Stream stream, bool ownsStream)
     {
-        ItemAccessorySegment = new(_nameTable);
-        ItemArmorSegment = new(_nameTable);
-        ItemConsumableSegment = new(_nameTable);
-        ItemKeyItemSegment = new(_nameTable);
-        ItemMaterialSegment = new(_nameTable);
-        ItemMeleeWeaponSegment = new(_nameTable);
-        ItemOutfitSegment = new(_nameTable);
-        ItemSkillCardSegment = new(_nameTable);
-        ItemRangedWeaponSegment = new(_nameTable);
+        ItemAccessorySegment = new(nameTable);
+        ItemArmorSegment = new(nameTable);
+        ItemConsumableSegment = new(nameTable);
+        ItemKeyItemSegment = new(nameTable);
+        ItemMaterialSegment = new(nameTable);
+        ItemMeleeWeaponSegment = new(nameTable);
+        ItemOutfitSegment = new(nameTable);
+        ItemSkillCardSegment = new(nameTable);
+        ItemRangedWeaponSegment = new(nameTable);
         using var reader = new BigEndianBinaryReader(stream, ownsStream);
         Read(reader);
     }
