@@ -7,55 +7,63 @@ namespace HaruEditor.Core.Tables.P5R;
 
 public class ItemTable : IReadWrite
 {
-    public ItemTable() {}
-
-    public ItemTable(string file) : this(File.OpenRead(file), true) {}
+    private readonly INameTable _nameTable;
     
-    public ItemTable(Stream stream, bool ownsStream)
+    public ItemTable(INameTable nameTable, string file) : this(nameTable, File.OpenRead(file), true) {}
+    
+    public ItemTable(INameTable nameTable, Stream stream, bool ownsStream)
     {
+        _nameTable = nameTable;
         using var reader = new BigEndianBinaryReader(stream, ownsStream);
         Read(reader);
     }
 
-    public ItemAccessorySegment ItemAccessorySegment { get; set; } = [];
-    public ItemArmorSegment ItemArmorSegment { get; set; } = [];
-    public ItemConsumableSegment ItemConsumableSegment { get; set; } = [];
-    public ItemKeyItemSegment ItemKeyItemSegment { get; set; } = [];
-    public ItemMaterialSegment ItemMaterialSegment { get; set; } = [];
-    public ItemMeleeWeaponSegment ItemMeleeWeaponSegment { get; set; } = [];
-    public ItemOutfitSegment ItemOutfitSegment { get; set; } = [];
-    public ItemSkillCardSegment ItemSkillCardSegment { get; set; } = [];
-    public ItemRangedWeaponSegment ItemRangedWeaponSegment { get; set; } = [];
-    
-    [Browsable(false)]
-    public UnknownSegment UnknownSegment { get; set; } = [];
+    public ItemAccessorySegment ItemAccessorySegment { get; set; }
+    public ItemArmorSegment ItemArmorSegment { get; set; }
+    public ItemConsumableSegment ItemConsumableSegment { get; set; }
+    public ItemKeyItemSegment ItemKeyItemSegment { get; set; }
+    public ItemMaterialSegment ItemMaterialSegment { get; set; }
+    public ItemMeleeWeaponSegment ItemMeleeWeaponSegment { get; set; }
+    public ItemOutfitSegment ItemOutfitSegment { get; set; }
+    public ItemSkillCardSegment ItemSkillCardSegment { get; set; }
+    public ItemRangedWeaponSegment ItemRangedWeaponSegment { get; set; }
+    [Browsable(false)] public UnknownSegment UnknownSegment { get; set; } = [];
     
     public void Read(BinaryReader reader)
     {
+        ItemAccessorySegment = new(_nameTable);
         ItemAccessorySegment.Read(reader);
         reader.BaseStream.AlignStream();
-        
+
+        ItemArmorSegment = new(_nameTable);
         ItemArmorSegment.Read(reader);
         reader.BaseStream.AlignStream();
-        
+
+        ItemConsumableSegment = new(_nameTable);
         ItemConsumableSegment.Read(reader);
         reader.BaseStream.AlignStream();
-        
+
+        ItemKeyItemSegment = new(_nameTable);
         ItemKeyItemSegment.Read(reader);
         reader.BaseStream.AlignStream();
-        
+
+        ItemMaterialSegment = new(_nameTable);
         ItemMaterialSegment.Read(reader);
         reader.BaseStream.AlignStream();
-        
+
+        ItemMeleeWeaponSegment = new(_nameTable);
         ItemMeleeWeaponSegment.Read(reader);
         reader.BaseStream.AlignStream();
-        
+
+        ItemOutfitSegment = new(_nameTable);
         ItemOutfitSegment.Read(reader);
         reader.BaseStream.AlignStream();
-        
+
+        ItemSkillCardSegment = new(_nameTable);
         ItemSkillCardSegment.Read(reader);
         reader.BaseStream.AlignStream();
-        
+
+        ItemRangedWeaponSegment = new(_nameTable);
         ItemRangedWeaponSegment.Read(reader);
         reader.BaseStream.AlignStream();
         
@@ -99,53 +107,58 @@ public class ItemTable : IReadWrite
     }
 }
 
-public class ItemAccessorySegment : BaseSegment<ItemAccessory>
+public class ItemAccessorySegment(INameTable nameTable) : BaseSegment<ItemAccessory>(nameTable)
 {
     public override uint ItemSize { get; } = 0x40;
 }
 
-public class ItemArmorSegment : BaseSegment<ItemArmor>
+public class ItemArmorSegment(INameTable nameTable) : BaseSegment<ItemArmor>(nameTable)
 {
     public override uint ItemSize { get; } = 0x30;
 }
 
-public class ItemConsumableSegment : BaseSegment<ItemConsumable>
+public class ItemConsumableSegment(INameTable nameTable) : BaseSegment<ItemConsumable>(nameTable)
 {
     public override uint ItemSize { get; } = 0x30;
 }
 
-public class ItemKeyItemSegment : BaseSegment<ItemKeyItem>
+public class ItemKeyItemSegment(INameTable nameTable) : BaseSegment<ItemKeyItem>(nameTable)
 {
     public override uint ItemSize { get; } = 0xC;
 }
 
-public class ItemMeleeWeaponSegment : BaseSegment<ItemMeleeWeapon>
+public class ItemMeleeWeaponSegment(INameTable nameTable) : BaseSegment<ItemMeleeWeapon>(nameTable)
 {
     public override uint ItemSize { get; } = 0x30;
 }
 
-public class ItemOutfitSegment : BaseSegment<ItemOutfit>
+public class ItemOutfitSegment(INameTable nameTable) : BaseSegment<ItemOutfit>(nameTable)
 {
     public override uint ItemSize { get; } = 0x20;
 }
 
-public class ItemSkillCardSegment : BaseSegment<ItemSkillCard>
+public class ItemSkillCardSegment(INameTable nameTable) : BaseSegment<ItemSkillCard>(nameTable)
 {
     public override uint ItemSize { get; } = 0x18;
 }
 
-public class ItemRangedWeaponSegment : BaseSegment<ItemRangedWeapon>
+public class ItemRangedWeaponSegment(INameTable nameTable) : BaseSegment<ItemRangedWeapon>(nameTable)
 {
     public override uint ItemSize { get; } = 0x84;
 }
 
-public class ItemMaterialSegment : BaseSegment<ItemMaterial>
+public class ItemMaterialSegment(INameTable nameTable) : BaseSegment<ItemMaterial>(nameTable)
 {
     public override uint ItemSize { get; } = 0x2C;
 }
 
-public class ItemMaterial : IReadWrite
+public class ItemMaterial(INameTable nameTable, int id) : IReadWrite, INameable
 {
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.Material, id);
+        set => nameTable.SetName(NameType.Material, id, value ?? string.Empty);
+    }
     public ItemType ItemKind { get; set; }
     public uint MenuSorting { get; set; }
     public ushort Flag { get; set; }
@@ -160,8 +173,6 @@ public class ItemMaterial : IReadWrite
     public ushort RESERVE_16 { get; set; }
 
     public uint[] Material { get; set; } = new uint[5];
-
-    public ItemMaterial() {}
 
     public void Read(BinaryReader reader)
     {
@@ -198,8 +209,14 @@ public class ItemMaterial : IReadWrite
     }
 }
 
-public class ItemRangedWeapon : IReadWrite
+public class ItemRangedWeapon(INameTable nameTable, int id) : IReadWrite, INameable
 {
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.RangedWeapon, id);
+        set => nameTable.SetName(NameType.RangedWeapon, id, value ?? string.Empty);
+    }
+    
     public ItemType ItemKind { get; set; }
 
     public ushort WeaponFieldMenuSorting { get; set; }
@@ -240,8 +257,6 @@ public class ItemRangedWeapon : IReadWrite
     public GunEnhancement IceCamo { get; set; }
 
     public ushort RESERVE_82 { get; set; }
-
-    public ItemRangedWeapon() {}
 
     public void Read(BinaryReader reader)
     {
@@ -355,8 +370,14 @@ public class GunEnhancement
     }
 }
 
-public class ItemSkillCard : IReadWrite
+public class ItemSkillCard(INameTable nameTable, int id) : IReadWrite, INameable
 {
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.SkillCard, id);
+        set => nameTable.SetName(NameType.SkillCard, id, value ?? string.Empty);
+    }
+    
     public ItemType ItemKind { get; set; }
 
     public uint MenuSorting { get; set; }
@@ -369,8 +390,6 @@ public class ItemSkillCard : IReadWrite
 
     public uint PurchasePrice { get; set; }
     public uint SellPrice { get; set; }
-
-    public ItemSkillCard() {}
 
     public void Read(BinaryReader reader)
     {
@@ -400,8 +419,13 @@ public class ItemSkillCard : IReadWrite
     }
 }
 
-public class ItemOutfit : IReadWrite
+public class ItemOutfit(INameTable nameTable, int id) : IReadWrite, INameable
 {
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.Outfit, id);
+        set => nameTable.SetName(NameType.Outfit, id, value ?? string.Empty);
+    }
     public ItemType ItemKind { get; set; }
 
     public ushort FieldMenuSorting { get; set; }
@@ -419,8 +443,6 @@ public class ItemOutfit : IReadWrite
 
     public ushort RESERVE_1 { get; set; }
     public ushort RESERVE_2 { get; set; }
-
-    public ItemOutfit() {}
 
     public void Read(BinaryReader reader)
     {
@@ -462,8 +484,14 @@ public class ItemOutfit : IReadWrite
 
 }
 
-public class ItemMeleeWeapon : IReadWrite
+public class ItemMeleeWeapon(INameTable nameTable, int id) : IReadWrite, INameable
 {
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.MeleeWeapon, id);
+        set => nameTable.SetName(NameType.MeleeWeapon, id, value ?? string.Empty);
+    }
+    
     public ItemType ItemKind { get; set; }
 
     public ushort WeaponFieldMenuSorting { get; set; }  // Higher = top
@@ -492,8 +520,6 @@ public class ItemMeleeWeapon : IReadWrite
     public byte DayAvailable { get; set; }
 
     public ushort UNKNOWN_2E { get; set; }
-
-    public ItemMeleeWeapon() {}
 
     public void Read(BinaryReader reader)
     {
@@ -553,17 +579,19 @@ public class ItemMeleeWeapon : IReadWrite
 
 }
 
-public class ItemKeyItem : IReadWrite
+public class ItemKeyItem(INameTable nameTable, int id) : IReadWrite, INameable
 {
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.KeyItem, id);
+        set => nameTable.SetName(NameType.KeyItem, id, value ?? string.Empty);
+    }
+    
     public ItemType ItemKind { get; set; }
 
     public uint MenuSorting { get; set; }
     public ushort Flag { get; set; } // hex format
     public ushort RESERVE_1A { get; set; } // reserved
-
-    public ItemKeyItem()
-    {
-    }
 
     public void Read(BinaryReader reader)
     {
@@ -582,8 +610,13 @@ public class ItemKeyItem : IReadWrite
     }
 }
 
-public class ItemConsumable : IReadWrite
+public class ItemConsumable(INameTable nameTable, int id) : IReadWrite, INameable
 {
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.Consumable, id);
+        set => nameTable.SetName(NameType.Consumable, id, value ?? string.Empty);
+    }
     public ItemType ItemKind { get; set; }
 
     public uint MenuSorting { get; set; }
@@ -602,8 +635,6 @@ public class ItemConsumable : IReadWrite
     public ushort RESERVE_1A { get; set; }
 
     public uint[] Material { get; set; } = new uint[5];
-
-    public ItemConsumable() {}
 
     public void Read(BinaryReader reader)
     {
@@ -645,8 +676,14 @@ public class ItemConsumable : IReadWrite
     }
 }
 
-public class ItemArmor : IReadWrite
+public class ItemArmor(INameTable nameTable, int id) : IReadWrite, INameable
 {
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.Armor, id);
+        set => nameTable.SetName(NameType.Armor, id, value ?? string.Empty);
+    }
+    
     public ItemType ItemKind { get; set; }
 
     public ushort WeaponFieldMenuSorting { get; set; }  // Higher value = top
@@ -673,8 +710,6 @@ public class ItemArmor : IReadWrite
     public Month MonthAvailable { get; set; } // Assume ushort enum
     public byte DayAvailable { get; set; }
     public ushort Unknown { get; set; }
-
-    public ItemArmor() {}
 
     public void Read(BinaryReader reader)
     {
@@ -731,8 +766,14 @@ public class ItemArmor : IReadWrite
     }
 }
 
-public class ItemAccessory : IReadWrite
+public class ItemAccessory(INameTable nameTable, int id) : IReadWrite, INameable
 {
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.Accessory, id);
+        set => nameTable.SetName(NameType.Accessory, id, value ?? string.Empty);
+    }
+
     public ItemType ItemKind { get; set; }
 
     public ushort WeaponFieldMenuSorting { get; set; } // Higher Value = top
@@ -758,8 +799,6 @@ public class ItemAccessory : IReadWrite
     public ushort RESERVE_2A { get; set; }
 
     public uint[] Material { get; set; } = new uint[5];
-
-    public ItemAccessory() {}
 
     public void Read(BinaryReader reader)
     {
@@ -817,20 +856,19 @@ public class ItemAccessory : IReadWrite
     }
 }
 
-
 [Flags]
-public enum EquippableUsers
+public enum EquippableUsers : ushort
 {
-    Joker   = 1 << 0,  // originally low bit
-    Ryuji   = 1 << 1,
-    Morgana = 1 << 2,
-    Ann     = 1 << 3,
-    Yusuke  = 1 << 4,
-    Makoto  = 1 << 5,
-    Haru    = 1 << 6,
-    Futaba  = 1 << 7,
-    Goro    = 1 << 8,
-    Kasumi  = 1 << 9   // now the high bit
+    Joker      = 1 << 1,  // original bit 14
+    Ryuji      = 1 << 2,  // original bit 13
+    Morgana    = 1 << 3,  // original bit 12
+    Ann        = 1 << 4,  // original bit 11
+    Yusuke     = 1 << 5,  // original bit 10
+    Makoto     = 1 << 6,  // original bit 9
+    Haru       = 1 << 7,  // original bit 8
+    Futaba     = 1 << 8,  // original bit 7
+    Goro       = 1 << 9,  // original bit 6
+    Kasumi     = 1 << 10, // original bit 5
 }
 
 [Flags]

@@ -1,5 +1,6 @@
 using System.Reflection;
 using Echoes;
+using HaruEditor.Core.Tables.Common;
 using HaruEditor.Desktop.Models;
 
 namespace HaruEditor.Desktop.Localization;
@@ -16,6 +17,11 @@ public static class ObjectLocalizer
 
         if (obj is ObjectWithId objectWithId)
         {
+            if (objectWithId.Object is INameable { Name: not null } nameable)
+            {
+                return nameable.Name;
+            }
+            
             var objIdKey = objectWithId.Object.GetType().FullName!.Replace('.', '_');
             var locIdValue = new TranslationUnit(LocAss, ObjLocFile, $"{objIdKey}_{objectWithId.Id}").CurrentValue;
             
