@@ -9,18 +9,18 @@ namespace HaruEditor.Core.Tables.P5R;
 
 public class PersonaTable : IReadWrite
 {
-    public PersonaTable() {}
+    public PersonaTable(INameTable nameTable, string file) : this(nameTable, File.OpenRead(file), true) {}
 
-    public PersonaTable(string file) : this(File.OpenRead(file), true) {}
-
-    public PersonaTable(Stream stream, bool ownsStream)
+    public PersonaTable(INameTable nameTable, Stream stream, bool ownsStream)
     {
         using var reader = new BigEndianBinaryReader(stream, ownsStream);
+        PersonaStatsSegment = new(nameTable);
+        PersonaSkillsAndStatGrowthsSegment = new(nameTable);
         Read(reader);
     }
 
-    public PersonaStatsSegment PersonaStatsSegment { get; set; } = [];
-    public PersonaSkillsAndStatGrowthsSegment PersonaSkillsAndStatGrowthsSegment { get; set; } = [];
+    public PersonaStatsSegment PersonaStatsSegment { get; set; }
+    public PersonaSkillsAndStatGrowthsSegment PersonaSkillsAndStatGrowthsSegment { get; set; }
     public PersonaLevelUpThresholdsSegment PersonaLevelUpThresholdsSegment { get; set; } = [];
     public PersonaPartyPersonasSegment PersonaPartyPersonasSegment { get; set; } = [];
     
@@ -57,12 +57,12 @@ public class PersonaTable : IReadWrite
     }
 }
 
-public class PersonaStatsSegment : BaseSegment<PersonaStats>
+public class PersonaStatsSegment(INameTable nameTable) : BaseSegment<PersonaStats>(nameTable)
 {
     public override uint ItemSize { get; } = 0xE;
 }
 
-public class PersonaSkillsAndStatGrowthsSegment : BaseSegment<PersonaSkillsAndStatGrowth>
+public class PersonaSkillsAndStatGrowthsSegment(INameTable nameTable) : BaseSegment<PersonaSkillsAndStatGrowth>(nameTable)
 {
     public override uint ItemSize { get; } = 0x46;
 }
@@ -77,14 +77,14 @@ public class PersonaPartyPersonasSegment : BaseSegment<PersonaPartyPersonas>
     public override uint ItemSize { get; } = 0x26E;
 }
 
-public class PersonaPartyPersonas : IReadWrite
+public partial class PersonaPartyPersonas : ReactiveObject, IReadWrite
 {
-    public PartyMember _member; // "Character"
-    public byte _levelCount; // "Levels Available"
-    //public byte _; // padding or mystery byte
+    [Reactive] public PartyMember _member;
+    [Reactive] public byte _levelCount;
+    public byte _unk1;
 
-    public PersonaSkillEntry[] _personaSkill = new PersonaSkillEntry[32];
-    public Stats[] _statGain = new Stats[98];
+    [Reactive] public PersonaSkillEntry[] _personaSkill = new PersonaSkillEntry[32];
+    [Reactive] public Stats[] _statGain = new Stats[98];
 
     public PersonaPartyPersonas()
     {
@@ -94,7 +94,7 @@ public class PersonaPartyPersonas : IReadWrite
     {
         _member = (PartyMember)reader.ReadUInt16();
         _levelCount = reader.ReadByte();
-        reader.ReadByte();
+        _unk1 = reader.ReadByte();
 
         for (int i = 0; i < _personaSkill.Length; i++)
             _personaSkill[i] = new(reader);
@@ -107,7 +107,7 @@ public class PersonaPartyPersonas : IReadWrite
     {
         writer.Write((ushort)_member);
         writer.Write(_levelCount);
-        writer.Write((byte)0); // padding/mystery byte
+        writer.Write(_unk1);
 
         for (int i = 0; i < _personaSkill.Length; i++)
             _personaSkill[i].Write(writer);
@@ -116,11 +116,12 @@ public class PersonaPartyPersonas : IReadWrite
             _statGain[i].Write(writer);
     }
 
-    public class PersonaSkillEntry
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public partial class PersonaSkillEntry : ReactiveObject
     {
-        public byte _level; // "Level Learned"
-        public LearnableFlags _flags; // "Learnability"
-        public PersonaSkillData _data;
+        [Reactive] public byte _level; // "Level Learned"
+        [Reactive] public LearnableFlags _flags; // "Learnability"
+        [Reactive] public PersonaSkillData _data;
 
         public PersonaSkillEntry(BinaryReader br)
         {
@@ -156,20 +157,22 @@ public partial class PersonaLevelUpThresholds : ReactiveObject, IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        for (int i = 0; i < _expThresholds.Length; i++)
-            writer.Write(_expThresholds[i]);
+        foreach (var exps in _expThresholds)
+            writer.Write(exps);
     }
 }
 
-public partial class PersonaSkillsAndStatGrowth : ReactiveObject, IReadWrite
+public partial class PersonaSkillsAndStatGrowth(INameTable nameTable, int id) : ReactiveObject, IReadWrite, INameable
 {
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.Persona, id);
+        set => nameTable.SetName(NameType.Persona, id, value ?? string.Empty);
+    }
+    
     [Reactive] private Stats _wStatDist;
     private byte _padding;
     [Reactive] private PersonaSkill[] _personaSkills = new PersonaSkill[16];
-
-    public PersonaSkillsAndStatGrowth()
-    {
-    }
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public partial class PersonaSkill(BinaryReader br) : ReactiveObject
@@ -225,8 +228,14 @@ public partial class PersonaSkillData : ReactiveObject
     }
 }
 
-public partial class PersonaStats : ReactiveObject, IReadWrite
+public partial class PersonaStats(INameTable nameTable, int id) : ReactiveObject, IReadWrite, INameable
 {
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.Persona, id);
+        set => nameTable.SetName(NameType.Persona, id, value ?? string.Empty);
+    }
+    
     [Reactive] private PersonaFlags _flags;
     [Reactive] private ArcanaID _arcana;
     [Reactive] private byte _level;
@@ -234,8 +243,6 @@ public partial class PersonaStats : ReactiveObject, IReadWrite
     private byte _padding;                        
     [Reactive] private PersonaInherit _inherit;
     [Reactive] private ushort _unknown;
-
-    public PersonaStats() {}
 
     public void Read(BinaryReader reader)
     {
