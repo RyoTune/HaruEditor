@@ -51,6 +51,8 @@ public class PlayerTable : IReadWrite
             unkSeg.Write(writer);
             writer.BaseStream.AlignStream();
         }
+        
+        writer.BaseStream.SetLength(writer.BaseStream.Position);
     }
 }
 
