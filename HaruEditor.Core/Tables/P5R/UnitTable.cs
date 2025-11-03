@@ -64,6 +64,8 @@ public class UnitTable : IReadWrite
         
         UnknownSegment.Write(writer);
         writer.BaseStream.AlignStream();
+        
+        writer.BaseStream.SetLength(writer.BaseStream.Position);
     }
 }
 
@@ -108,7 +110,9 @@ public class UnitVisualIndex : IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write(PersonaIndex);
+        writer.Write(ModelIndex);
+        writer.Write(UnknownR);
     }
 }
 
@@ -148,7 +152,19 @@ public class UnitVoiceIndex : IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write(VoiceID);
+        writer.Write(TalkPerson);
+        writer.Write(VoiceABCValue);
+        writer.Write(Padding);
+
+        writer.Write(TalkMoneyMin);
+        writer.Write(TalkMoneyMax);
+
+        for (var i = 0; i < 4; i++)
+            writer.Write(TalkItem[i]);
+
+        for (var i = 0; i < 4; i++)
+            writer.Write(TalkItemRare[i]);
     }
 }
 
@@ -203,7 +219,26 @@ public class ElementalAffinities : IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        PhysAffinity.Write(writer);
+        GunAffinity.Write(writer);
+        FireAffinity.Write(writer);
+        IceAffinity.Write(writer);
+        ElecAffinity.Write(writer);
+        WindAffinity.Write(writer);
+        PsyAffinity.Write(writer);
+        NukeAffinity.Write(writer);
+        BlessAffinity.Write(writer);
+        CurseAffinity.Write(writer);
+        AlmightyAffinity.Write(writer);
+        DizzyAffinity.Write(writer);
+        ConfuseAffinity.Write(writer);
+        FearAffinity.Write(writer);
+        ForgetAffinity.Write(writer);
+        HungerAffinity.Write(writer);
+        SleepAffinity.Write(writer);
+        RageAffinity.Write(writer);
+        DespairAffinity.Write(writer);
+        BrainwashAffinity.Write(writer);
     }
 }
 
@@ -219,6 +254,12 @@ public class AffinityBitfield
     {
         Flags = (AffinityFlags)reader.ReadByte();
         Multiplier = reader.ReadByte();
+    }
+
+    public void Write(BinaryWriter writer)
+    {
+        writer.Write((byte)Flags);
+        writer.Write(Multiplier);
     }
 }
 
@@ -286,7 +327,47 @@ public class EnemyUnitStats : IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write((uint)Flags);
+        writer.Write((byte)Arcana);
+        writer.Write(RESERVE_05);
+        writer.Write(Level);
+        writer.Write(Hp);
+        writer.Write(Sp);
+
+        Stats.Write(writer);
+        writer.Write(RESERVE_STAT);
+
+        for (int i = 0; i < 8; i++)
+            writer.Write((ushort)SkillIds[i]);
+
+        writer.Write(ExpReward);
+        writer.Write(MoneyReward);
+
+        for (int i = 0; i < 4; i++)
+            WriteEnemyItem(writer, DropTables[i]);
+
+        WriteEventDrop(writer, EventDrop);
+        WriteAttack(writer, AttackDamage);
+    }
+
+    private static void WriteEnemyItem(BinaryWriter writer, datEnemyItemTable table)
+    {
+        writer.Write(table.ItemId);
+        writer.Write(table.DropProbability);
+    }
+
+    private static void WriteEventDrop(BinaryWriter writer, datEnemyEventItemTable evt)
+    {
+        writer.Write(evt.EventID);
+        writer.Write(evt.ItemId);
+        writer.Write(evt.DropProbability);
+    }
+
+    private static void WriteAttack(BinaryWriter writer, datEnemyAttackTable atk)
+    {
+        writer.Write((byte)atk.Attribute);
+        writer.Write(atk.Accuracy);
+        writer.Write(atk.Damage);
     }
 }
 
