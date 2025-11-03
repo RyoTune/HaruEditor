@@ -57,6 +57,8 @@ public class VisualTable : IReadWrite
             unkSeg.Write(writer);
             writer.BaseStream.AlignStream();
         }
+        
+        writer.BaseStream.SetLength(writer.BaseStream.Position);
     }
 }
 
@@ -111,7 +113,17 @@ public class VisualPersonaVisualVariablesA : IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write(Flags);
+        NormalCylinder.Write(writer);
+        ButuriCylinder.Write(writer);
+        SkillCCylinder.Write(writer);
+        SkillSCylinder.Write(writer);
+        ButuriPosition.Write(writer);
+        MagicPosition.Write(writer);
+        writer.Write(BattleModelScale);
+        FrameData.Write(writer);
+        writer.Write(Alpha);
+        writer.Write(AlignmentReserve);
     }
 }
 
@@ -127,6 +139,12 @@ public class TVisual_AttackFrameDataPersona
     {
         PersonaNormalAttack = new(reader);
         PersonaMagicAttack = new(reader);
+    }
+    
+    public void Write(BinaryWriter writer)
+    {
+        PersonaNormalAttack.Write(writer);
+        PersonaMagicAttack.Write(writer);
     }
 }
 
@@ -144,6 +162,13 @@ public class OffsetPosition
         X = reader.ReadInt16();
         Y = reader.ReadInt16();
         Z = reader.ReadInt16();
+    }
+    
+    public void Write(BinaryWriter writer)
+    {
+        writer.Write(X);
+        writer.Write(Y);
+        writer.Write(Z);
     }
 }
 
@@ -179,7 +204,16 @@ public class VisualPlayerVisualVariablesA : IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        for (int i = 0; i < 13; i++)
+            CollisionTable[i].Write(writer);
+
+        writer.Write(ModelScale);
+        writer.Write(AilmentIndicatorSize);
+        writer.Write(EffectScale);
+        writer.Write(UnkScale);
+        ForwardMove.Write(writer);
+        BackwardMove.Write(writer);
+        FrameData.Write(writer);
     }
 }
 
@@ -201,6 +235,15 @@ public class TVisual_AttackFrameData
         PlayerMissedAttack = new(reader);
         PlayerItemUse = new(reader);
         PlayerMagicCast = new(reader);
+    }
+    
+    public void Write(BinaryWriter writer)
+    {
+        PlayerNormalAttack.Write(writer);
+        PlayerCritAttack.Write(writer);
+        PlayerMissedAttack.Write(writer);
+        PlayerItemUse.Write(writer);
+        PlayerMagicCast.Write(writer);
     }
 }
 
@@ -243,7 +286,19 @@ public class VisualEnemyVisualVariablesA : IReadWrite
 
     public void Write(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write(Flags);
+        NormalCylinder.Write(writer);
+        DyingCylinder.Write(writer);
+        DownCylinder.Write(writer);
+        Skill1Cylinder.Write(writer);
+        Skill2Cylinder.Write(writer);
+        writer.Write(ModelScale);
+        writer.Write(AilmentIndicatorSize);
+        writer.Write(EffectScale);
+        writer.Write(UnkScale);
+        ForwardMove.Write(writer);
+        BackwardMove.Write(writer);
+        FrameData.Write(writer);
     }
 }
 
@@ -262,6 +317,13 @@ public class CameraCenter
         Y = reader.ReadSingle();
         Z = reader.ReadSingle();
     }
+    
+    public void Write(BinaryWriter writer)
+    {
+        writer.Write(X);
+        writer.Write(Y);
+        writer.Write(Z);
+    }
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
@@ -279,6 +341,13 @@ public class datCollisionTable
         VirtualHeight = reader.ReadSingle();
         VirtualRadius = reader.ReadSingle();
     }
+    
+    public void Write(BinaryWriter writer)
+    {
+        Center.Write(writer);
+        writer.Write(VirtualHeight);
+        writer.Write(VirtualRadius);
+    }
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
@@ -293,6 +362,12 @@ public class datMoveTable
     {
         Flags = reader.ReadUInt32();
         Speed = reader.ReadSingle();
+    }
+    
+    public void Write(BinaryWriter writer)
+    {
+        writer.Write(Flags);
+        writer.Write(Speed);
     }
 }
 
@@ -317,6 +392,16 @@ public class TVisual_AttackFrameData_Struct
         Stop = reader.ReadInt16();
         Blend = reader.ReadInt16();
     }
+    
+    public void Write(BinaryWriter writer)
+    {
+        for (int i = 0; i < 8; i++)
+            writer.Write(AttackHitRegFrames[i]);
+        writer.Write(AttackAnimationSpeed);
+        writer.Write(DistanceFromTarget);
+        writer.Write(Stop);
+        writer.Write(Blend);
+    }
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
@@ -333,6 +418,13 @@ public class TVisual_AttackFrameDataEnemy
         EnemyNormalAttack = new(reader);
         EnemyMagicCast = new(reader);
         EnemyUnkAttack = new(reader);
+    }
+    
+    public void Write(BinaryWriter writer)
+    {
+        EnemyNormalAttack.Write(writer);
+        EnemyMagicCast.Write(writer);
+        EnemyUnkAttack.Write(writer);
     }
 }
 
