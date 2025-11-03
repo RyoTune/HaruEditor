@@ -8,17 +8,20 @@ public class VisualTable : IReadWrite
 {
     public VisualTable() {}
 
-    public VisualTable(string file) : this(File.OpenRead(file), true) {}
+    public VisualTable(INameTable nameTable, string file) : this(nameTable, File.OpenRead(file), true) {}
 
-    public VisualTable(Stream stream, bool ownsStream)
+    public VisualTable(INameTable nameTable, Stream stream, bool ownsStream)
     {
+        VisualEnemyVisualVariablesASegment = new(nameTable);
+        VisualPlayerVisualVariablesASegment = new(nameTable);
+        VisualPersonaVisualVariablesASegment = new(nameTable);
         using var reader = new BigEndianBinaryReader(stream, ownsStream);
         Read(reader);
     }
 
-    public VisualEnemyVisualVariablesASegment VisualEnemyVisualVariablesASegment { get; set; } = [];
-    public VisualPlayerVisualVariablesASegment VisualPlayerVisualVariablesASegment { get; set; } = [];
-    public VisualPersonaVisualVariablesASegment VisualPersonaVisualVariablesASegment { get; set; } = [];
+    public VisualEnemyVisualVariablesASegment VisualEnemyVisualVariablesASegment { get; set; }
+    public VisualPlayerVisualVariablesASegment VisualPlayerVisualVariablesASegment { get; set; }
+    public VisualPersonaVisualVariablesASegment VisualPersonaVisualVariablesASegment { get; set; }
     
     [Browsable(false)]
     public UnknownSegment[] UnknownSegments { get; set; } = [[], [], []];
@@ -62,23 +65,29 @@ public class VisualTable : IReadWrite
     }
 }
 
-public class VisualEnemyVisualVariablesASegment : BaseSegment<VisualEnemyVisualVariablesA>
+public class VisualEnemyVisualVariablesASegment(INameTable nameTable) : BaseSegment<VisualEnemyVisualVariablesA>(nameTable)
 {
     public override uint ItemSize { get; } = 0xC8;
 }
 
-public class VisualPlayerVisualVariablesASegment : BaseSegment<VisualPlayerVisualVariablesA>
+public class VisualPlayerVisualVariablesASegment(INameTable nameTable) : BaseSegment<VisualPlayerVisualVariablesA>(nameTable)
 {
     public override uint ItemSize { get; } = 0x194;
 }
 
-public class VisualPersonaVisualVariablesASegment : BaseSegment<VisualPersonaVisualVariablesA>
+public class VisualPersonaVisualVariablesASegment(INameTable nameTable) : BaseSegment<VisualPersonaVisualVariablesA>(nameTable)
 {
     public override uint ItemSize { get; } = 0x94;
 }
 
-public class VisualPersonaVisualVariablesA : IReadWrite
+public class VisualPersonaVisualVariablesA(INameTable nameTable, int id) : IReadWrite, INameable
 {
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.Persona, id);
+        set => nameTable.SetName(NameType.Persona, id, value ?? string.Empty);
+    }
+    
     public uint Flags { get; set; }
 
     public datCollisionTable NormalCylinder { get; set; }
@@ -172,8 +181,14 @@ public class OffsetPosition
     }
 }
 
-public class VisualPlayerVisualVariablesA : IReadWrite
+public class VisualPlayerVisualVariablesA(INameTable nameTable, int id) : IReadWrite, INameable
 {
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.PartyFirst, id);
+        set => nameTable.SetName(NameType.PartyFirst, id, value ?? string.Empty);
+    }
+    
     public datCollisionTable[] CollisionTable { get; set; } = new datCollisionTable[13]; // Camera Data
 
     public ushort ModelScale { get; set; }               // Model Scale %
@@ -247,8 +262,14 @@ public class TVisual_AttackFrameData
     }
 }
 
-public class VisualEnemyVisualVariablesA : IReadWrite
+public class VisualEnemyVisualVariablesA(INameTable nameTable, int id) : IReadWrite, INameable
 {
+    public string? Name
+    {
+        get => nameTable.GetName(NameType.Enemy, id);
+        set => nameTable.SetName(NameType.Enemy, id, value ?? string.Empty);
+    }
+
     public uint Flags { get; set; }
 
     public datCollisionTable NormalCylinder { get; set; }

@@ -110,9 +110,9 @@ public enum NameType
     BattleAction,
     Outfit,
     SkillCard,
-    PartyFirstName,
-    PartyLastName,
-    ConfidantName,
+    PartyFirst,
+    PartyLast,
+    Confidant,
     RangedWeapon,
     _39
 }
