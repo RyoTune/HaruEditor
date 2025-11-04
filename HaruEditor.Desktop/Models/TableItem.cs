@@ -1,13 +1,24 @@
-using System;
+using HaruEditor.Desktop.Project;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
 namespace HaruEditor.Desktop.Models;
 
-public partial class TableItem(int id, object item) : ReactiveObject
+public partial class TableItem(ICommentService comments, int id, object item) : ReactiveObject, IComment
 {
     [Reactive] private ObjectWithId _item = new(id, item);
     [Reactive] private int _id = id;
     [Reactive] private string _tags = string.Empty;
-    [Reactive] private string _comment = Guid.NewGuid().ToString();
+
+    public string CommentId { get; } = $"{item.GetType().FullName}.{id}";
+    
+    public string Comment
+    {
+        get => comments.GetComment(this);
+        set
+        {
+            comments.SetComment(this, value);
+            this.RaisePropertyChanged();
+        }
+    }
 }

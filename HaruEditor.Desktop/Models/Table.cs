@@ -4,12 +4,13 @@ using System.Linq;
 using System.Reflection;
 using HaruEditor.Core.Tables.Common;
 using HaruEditor.Desktop.Localization;
+using HaruEditor.Desktop.Project;
 
 namespace HaruEditor.Desktop.Models;
 
 public class Table
 {
-    public Table(IReadWrite table)
+    public Table(ICommentService comments, IReadWrite table)
     {
         Name = ObjectLocalizer.GetValue(table);
         Sections = table.GetType().GetProperties()
@@ -24,7 +25,7 @@ public class Table
                 return true;
             })
             .Select(x => x.GetValue(table))
-            .Select(x => new TableSection((IEnumerable<object>)x!)).ToList();
+            .Select(x => new TableSection(comments, (IEnumerable<object>)x!)).ToList();
         Content = table;
     }
 
