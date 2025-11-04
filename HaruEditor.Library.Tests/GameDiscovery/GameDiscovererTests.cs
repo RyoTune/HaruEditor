@@ -1,4 +1,4 @@
-using HaruEditor.Library.GameDiscovery;
+using HaruEditor.Core.GameDiscovery;
 
 namespace HaruEditor.Library.Tests.GameDiscovery;
 

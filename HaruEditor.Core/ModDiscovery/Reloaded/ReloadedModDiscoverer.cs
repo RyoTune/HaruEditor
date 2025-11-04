@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using HaruEditor.Core.ModDiscovery.Reloaded.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.Win32;
 
 namespace HaruEditor.Core.ModDiscovery.Reloaded;
 

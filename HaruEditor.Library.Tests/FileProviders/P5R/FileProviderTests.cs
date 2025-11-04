@@ -1,4 +1,4 @@
-using HaruEditor.Library.FileProviders.P5R;
+using HaruEditor.Core.FileProviders.P5R;
 
 namespace HaruEditor.Library.Tests.FileProviders.P5R;
 
