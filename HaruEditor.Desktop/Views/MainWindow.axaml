@@ -212,7 +212,7 @@
                                                         Minimum="0"
                                                         ParsingNumberStyle="Integer"
                                                         ShowButtonSpinner="False"
-                                                        Text="{Binding #Root.((viewModels:MainWindowViewModel)DataContext).JumpIdText}"
+                                                        Value="{Binding #Root.((viewModels:MainWindowViewModel)DataContext).JumpId}"
                                                         Watermark="Go to ID..."
                                                         Width="96">
                                                         <NumericUpDown.KeyBindings>

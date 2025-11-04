@@ -29,7 +29,7 @@ public partial class MainWindowViewModel : ViewModelBase, IActivatableViewModel
     [Reactive] private TableSection? _selectedSection;
     [Reactive] private SearchItem? _selectedSearchItem;
     [Reactive] private string? _searchText;
-    [Reactive] private string? _jumpIdText;
+    [Reactive] private double? _jumpId;
     
     private readonly ProjectService _project;
     private readonly Dictionary<Table, string> _tableFileMap = [];
@@ -53,7 +53,7 @@ public partial class MainWindowViewModel : ViewModelBase, IActivatableViewModel
                     SelectedItem = null;
                     SelectedSearchItem = null;
                     SearchText = null;
-                    JumpIdText = null;
+                    JumpId = null;
                 })
                 .DisposeWith(disp);
 
@@ -152,11 +152,13 @@ public partial class MainWindowViewModel : ViewModelBase, IActivatableViewModel
     [ReactiveCommand]
     private void Jump()
     {
-        if (!int.TryParse(_jumpIdText, out var id) && id < SelectedSection?.Items.Count) return;
+        if (JumpId == null || JumpId >= SelectedSection?.Items.Count)
+        {
+            return;
+        }
         
-        var item = SelectedSection?.Items[id];
+        var item = SelectedSection?.Items[(int)JumpId];
         SelectedItem = item;
-        JumpIdText = null;
     }
 
     public record SearchItem(string Name, TableItem TableItem);
