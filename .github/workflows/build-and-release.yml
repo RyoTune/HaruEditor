@@ -1,0 +1,114 @@
+name: Build and Publish
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '*.*.*'
+env:
+  IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/') }}
+  RELEASE_TAG: ${{ github.ref_name }}
+  PROJECT_GUI: HaruEditor.Desktop
+  PROJECT_GUI_BUILD_WIN: HaruEditor-windows
+  PROJECT_GUI_BUILD_LINUX: HaruEditor-linux
+
+jobs:
+  win-build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Build
+        run: |
+          if ($env:IS_RELEASE -eq 'true') {
+              dotnet publish $env:PROJECT_GUI -r win-x64 -c Release -o build /p:Version=$env:RELEASE_TAG
+          }
+          else {
+              dotnet publish $env:PROJECT_GUI -r win-x64 -c Release -o build /p:Version=1.0.0
+          }
+
+      - name: Zip Build
+        run: Compress-Archive -Path build/* -DestinationPath "$env:PROJECT_GUI_BUILD_WIN.zip"
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-build
+          path: ${{ env.PROJECT_GUI_BUILD_WIN }}.zip
+          retention-days: 0
+
+  linux-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Setup AutoChangelog
+        run: npm install -g auto-changelog
+
+      - name: Create Changelog
+        run: |
+          if [ $IS_RELEASE = 'true' ]; then
+            auto-changelog --sort-commits date --hide-credit --template .github/changelog.hbs --commit-limit false --starting-version $RELEASE_TAG
+          else
+            auto-changelog --sort-commits date --hide-credit --template .github/changelog.hbs --commit-limit false --unreleased
+          fi
+
+      - name: Build
+        run: |
+          if [ $IS_RELEASE = 'true' ]; then
+            dotnet publish $PROJECT_GUI -r linux-x64 -c Release -o build /p:Version=$RELEASE_TAG
+          else
+            dotnet publish $PROJECT_GUI -r linux-x64 -c Release -o build
+          fi
+
+      - name: Zip Build
+        run: |
+          cd build
+          tar -czvf "../${PROJECT_GUI_BUILD_LINUX}.tar.gz" .
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: |
+            ${{ env.PROJECT_GUI_BUILD_LINUX }}.tar.gz
+            CHANGELOG.md
+          retention-days: 0
+  
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [ win-build, linux-build  ]
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: artifacts/linux-build/CHANGELOG.md
+          files: |
+            artifacts/**
+          fail_on_unmatched_files: true
