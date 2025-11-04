@@ -18,5 +18,20 @@
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
     </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Amicitia.IO">
+        <HintPath>libs\Amicitia.IO.dll</HintPath>
+      </Reference>
+      <Reference Include="AtlusScriptLibrary">
+        <HintPath>libs\AtlusScriptLibrary.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="Charsets\**\*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
     
 </Project>

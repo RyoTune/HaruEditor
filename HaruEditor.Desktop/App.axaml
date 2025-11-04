@@ -12,8 +12,12 @@
     </Application.DataTemplates>
 
     <Application.Styles>
-        <FluentTheme />
-        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+        <!-- <FluentTheme /> -->
+        <!-- <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" /> -->
         <themes:ShadTheme />
     </Application.Styles>
+
+    <Application.Resources>
+        <FontFamily x:Key="LucideIcon">/Assets/Fonts#lucide</FontFamily>
+    </Application.Resources>
 </Application>

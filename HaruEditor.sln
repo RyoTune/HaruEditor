@@ -2,6 +2,12 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HaruEditor.Desktop", "HaruEditor.Desktop\HaruEditor.Desktop.csproj", "{23D6ABE9-80C3-47D8-A5C6-2B55AC334DB9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HaruEditor.Core", "HaruEditor.Core\HaruEditor.Core.csproj", "{B7572A78-6DF3-4CE1-B935-E41D52D400DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HaruEditor.Library.Tests", "HaruEditor.Library.Tests\HaruEditor.Library.Tests.csproj", "{660C93E1-1FFA-466E-BEBC-F8C49A082452}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HaruEditor.Desktop.Localization", "HaruEditor.Desktop.Localization\HaruEditor.Desktop.Localization.csproj", "{315984F5-D9FA-48A3-BF8B-1FFD0E02A907}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +18,17 @@ Global
 		{23D6ABE9-80C3-47D8-A5C6-2B55AC334DB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23D6ABE9-80C3-47D8-A5C6-2B55AC334DB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{23D6ABE9-80C3-47D8-A5C6-2B55AC334DB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7572A78-6DF3-4CE1-B935-E41D52D400DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7572A78-6DF3-4CE1-B935-E41D52D400DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7572A78-6DF3-4CE1-B935-E41D52D400DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7572A78-6DF3-4CE1-B935-E41D52D400DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{660C93E1-1FFA-466E-BEBC-F8C49A082452}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{660C93E1-1FFA-466E-BEBC-F8C49A082452}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{660C93E1-1FFA-466E-BEBC-F8C49A082452}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{660C93E1-1FFA-466E-BEBC-F8C49A082452}.Release|Any CPU.Build.0 = Release|Any CPU
+		{315984F5-D9FA-48A3-BF8B-1FFD0E02A907}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{315984F5-D9FA-48A3-BF8B-1FFD0E02A907}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{315984F5-D9FA-48A3-BF8B-1FFD0E02A907}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{315984F5-D9FA-48A3-BF8B-1FFD0E02A907}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
