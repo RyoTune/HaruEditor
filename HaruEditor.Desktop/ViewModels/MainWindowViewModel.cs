@@ -1,49 +1,163 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using DynamicData.Binding;
+using HaruEditor.Core.Common;
 using HaruEditor.Core.Tables.P5R;
+using HaruEditor.Desktop.Localization;
+using HaruEditor.Desktop.Models;
+using HaruEditor.Desktop.Project;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
 namespace HaruEditor.Desktop.ViewModels;
 
-public partial class MainWindowViewModel : ViewModelBase
+public partial class MainWindowViewModel : ViewModelBase, IActivatableViewModel
 {
-    [Reactive] private DataItem? _selectedItem;
-    [Reactive] private int _selectedTab;
+    private static readonly TimeSpan DefaultThrottle = TimeSpan.FromMilliseconds(300);
     
+    public ViewModelActivator Activator { get; } = new();
+    
+    [Reactive] private TableItem? _selectedItem;
+    [Reactive] private ObservableCollection<Table> _tables = [];
+    [Reactive] private TableSection? _selectedSection;
+    [Reactive] private SearchItem? _selectedSearchItem;
+    [Reactive] private string? _searchText;
+    [Reactive] private string? _jumpIdText;
+    
+    private readonly ProjectService _project;
+    private readonly Dictionary<Table, string> _tableFileMap = [];
+    private readonly NameTableProxy _nameTableProxy = new();
+    private string? _nameTableFile;
+    
+    private readonly ObservableAsPropertyHelper<IEnumerable<SearchItem>> _searchItems;
+    public IEnumerable<SearchItem> SearchItems => _searchItems.Value;
+
     public MainWindowViewModel()
     {
-        SkillTable = new(Path.Join(".", "Tables", "SKILL.TBL"));
+        _project = new();
+        _searchItems = this.WhenValueChanged(x => x.SelectedSection)
+            .Select(x => x == null ? [] : x.Items.Select(y => new SearchItem(ObjectLocalizer.GetValue(y.Item), y)))
+            .ToProperty(this, x => x.SearchItems);
+        
+        this.WhenActivated(disp =>
+        {
+            this.WhenValueChanged(x => x.SelectedSection).Subscribe(_ =>
+                {
+                    SelectedItem = null;
+                    SelectedSearchItem = null;
+                    SearchText = null;
+                    JumpIdText = null;
+                })
+                .DisposeWith(disp);
 
-        this.WhenValueChanged(x => x.SelectedTab).Subscribe(_ => SelectedItem = null);
+            this.WhenValueChanged(x => x.SelectedSearchItem)
+                .Throttle(DefaultThrottle)
+                .WhereNotNull()
+                .Subscribe(x => SelectedItem = x.TableItem)
+                .DisposeWith(disp);
+                
+            _searchItems.DisposeWith(disp);
+
+            _project.WhenAny(x => x.CurrentProject, x => x.Sender)
+                .Subscribe(x =>
+                {
+                    Tables.Clear();
+                    if (x.CurrentProject == null) return;
+                    
+                    var projDir = Path.GetDirectoryName(x.ProjectFile);
+                    var essentialsDir = Path.Join(projDir, "P5REssentials");
+                    if (!Directory.Exists(essentialsDir)) return;
+
+                    foreach (var tblFile in Directory.EnumerateFiles(essentialsDir, "*.tbl", SearchOption.AllDirectories))
+                    {
+                        var tblName = Path.GetFileName(tblFile).ToUpperInvariant();
+                        Table table;
+                        switch (tblName)
+                        {
+                            case "ENCOUNT.TBL":
+                                table = new(_project, new EncountTable(tblFile));
+                                break;
+                            case "SKILL.TBL":
+                                table = new(_project, new SkillTable(_nameTableProxy, tblFile));
+                                break;
+                            case "PERSONA.TBL":
+                                table = new(_project, new PersonaTable(_nameTableProxy, tblFile));
+                                break;
+                            case "PLAYER.TBL":
+                                table = new(_project, new PlayerTable(tblFile));
+                                break;
+                            case "UNIT.TBL":
+                                table = new(_project, new UnitTable(_nameTableProxy, tblFile));
+                                break;
+                            case "VISUAL.TBL":
+                                table = new(_project, new VisualTable(_nameTableProxy, tblFile));
+                                break;
+                            case "ITEM.TBL":
+                                table = new(_project, new ItemTable(_nameTableProxy, tblFile));
+                                break;
+                            case "NAME.TBL":
+                                _nameTableProxy.NameTable = new(tblFile);
+                                _nameTableFile = tblFile;
+                                continue;
+                            default: continue;
+                        }
+
+                        _tableFileMap[table] = tblFile;
+                        Tables.Add(table);
+                    }
+                })
+                .DisposeWith(disp);
+        });
     }
 
-    public SkillTable SkillTable { get; set; }
-
-    public List<DataItem> ActiveSkillsList => SkillTable.ActiveSkills
-        .Select(x => new DataItem(x, x.Id, Guid.NewGuid().ToString(), String.Empty, string.Empty)).ToList();
-
-    public Interaction<object, Unit> EditWithPropertyGrid { get; } = new();
+    public Interaction<Unit, string?> SelectFolder { get; } = new();
 
     [ReactiveCommand]
-    private async Task EditItem(object? item)
+    private async Task SelectProjectDir()
     {
-        if (item == null) return;
-        await EditWithPropertyGrid.Handle(item);
+        var selectedDir = await SelectFolder.Handle(new());
+        if (string.IsNullOrEmpty(selectedDir)) return;
+        
+        _project.SetCurrentProject(selectedDir);
     }
-}
+    
+    [ReactiveCommand]
+    private async Task Save()
+    {
+        _project.Save();
+        
+        foreach (var table in _tables)
+        {
+            var outputFile = _tableFileMap[table].Replace(".tbl", "_2.tbl", StringComparison.OrdinalIgnoreCase);
+            var fs = File.Create(outputFile);
+            await using var writer = new BigEndianBinaryWriter(fs);
+            table.Content.Write(writer);
+        }
 
-public partial class DataItem(object item, int id, string name, string tags, string comment) : ReactiveObject
-{
-    [Reactive] private object _item = item;
-    [Reactive] private int _id = id;
-    [Reactive] private string _name = name;
-    [Reactive] private string _tags = tags;
-    [Reactive] private string _comment = comment;
+        if (_nameTableFile != null)
+        {
+            var outputFile = _nameTableFile.Replace(".tbl", ".tbl", StringComparison.OrdinalIgnoreCase);
+            var fs = File.Create(outputFile);
+            _nameTableProxy.Write(fs);
+        }
+    }
+
+    [ReactiveCommand]
+    private void Jump()
+    {
+        if (!int.TryParse(_jumpIdText, out var id) && id < SelectedSection?.Items.Count) return;
+        
+        var item = SelectedSection?.Items[id];
+        SelectedItem = item;
+        JumpIdText = null;
+    }
+
+    public record SearchItem(string Name, TableItem TableItem);
 }
