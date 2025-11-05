@@ -71,11 +71,8 @@ public partial class MainWindowViewModel : ViewModelBase, IActivatableViewModel
                     Tables.Clear();
                     if (x.CurrentProject == null) return;
                     
-                    var projDir = Path.GetDirectoryName(x.ProjectFile);
-                    var essentialsDir = Path.Join(projDir, "P5REssentials");
-                    if (!Directory.Exists(essentialsDir)) return;
-
-                    foreach (var tblFile in Directory.EnumerateFiles(essentialsDir, "*.tbl", SearchOption.AllDirectories))
+                    var projDir = Path.GetDirectoryName(x.ProjectFile)!;
+                    foreach (var tblFile in Directory.EnumerateFiles(projDir, "*.tbl", SearchOption.AllDirectories))
                     {
                         var tblName = Path.GetFileName(tblFile).ToUpperInvariant();
                         Table table;
