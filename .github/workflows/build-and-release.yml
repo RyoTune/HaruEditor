@@ -9,7 +9,7 @@ env:
   IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/') }}
   RELEASE_TAG: ${{ github.ref_name }}
   PROJECT_GUI: HaruEditor.Desktop
-  PROJECT_GUI_BUILD_WIN: HaruEditor-windows
+  PROJECT_GUI_BUILD_WIN: HaruEditor-win
   PROJECT_GUI_BUILD_LINUX: HaruEditor-linux
 
 jobs:
