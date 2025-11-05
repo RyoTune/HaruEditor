@@ -135,16 +135,23 @@ public partial class MainWindowViewModel : ViewModelBase, IActivatableViewModel
         
         foreach (var table in _tables)
         {
-            var outputFile = _tableFileMap[table].Replace(".tbl", "_2.tbl", StringComparison.OrdinalIgnoreCase);
-            var fs = File.Create(outputFile);
-            await using var writer = new BigEndianBinaryWriter(fs);
+            var tableFile = _tableFileMap[table];
+            
+            // Create backup.
+            var tableBakFile = $"{tableFile}.bak";
+            File.Copy(tableFile, tableBakFile, true);
+            
+            // Save file.
+            await using var writer = new BigEndianBinaryWriter(File.Create(tableFile));
             table.Content.Write(writer);
         }
 
         if (_nameTableFile != null)
         {
-            var outputFile = _nameTableFile.Replace(".tbl", ".tbl", StringComparison.OrdinalIgnoreCase);
-            var fs = File.Create(outputFile);
+            var nameBakFile = $"{_nameTableFile}.bak";
+            File.Copy(_nameTableFile, nameBakFile, true);
+            
+            await using var fs = File.Create(_nameTableFile);
             _nameTableProxy.Write(fs);
         }
     }
