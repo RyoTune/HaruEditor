@@ -8,7 +8,7 @@
     x:DataType="viewModels:MainWindowViewModel"
     x:Name="Root"
     xmlns="https://github.com/avaloniaui"
-    xmlns:apc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+    xmlns:apc="clr-namespace:HaruEditor.Desktop.Controls"
     xmlns:conv="clr-namespace:HaruEditor.Desktop.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:echoes="clr-namespace:Echoes;assembly=Echoes.Avalonia"
@@ -138,7 +138,7 @@
                     Classes="Large"
                     Grid.Row="1"
                     Text="{echoes:Translate {x:Static tn:Strings.properties}}" />
-                <apc:PropertyGrid
+                <apc:HaruPropertyGrid
                     DataContext="{Binding SelectedItem.Item.Object, FallbackValue={x:Null}}"
                     Grid.Row="2"
                     IsAutoNameWidth="True"
