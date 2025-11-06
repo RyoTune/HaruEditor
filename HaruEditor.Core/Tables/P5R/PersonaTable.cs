@@ -212,19 +212,33 @@ public partial class PersonaSkillsAndStatGrowth(INameTable nameTable, int id) : 
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public partial class PersonaSkillData : ReactiveObject
+public class PersonaSkillData(BinaryReader br) : ReactiveObject
 {
-    [Reactive] private BattleSkill _skill;
-    [Reactive] private BattleTrait _trait;
-    [Reactive] private short _data;
+    private short _data = br.ReadInt16();
 
-    public PersonaSkillData(BinaryReader br)
+    public BattleSkill Skill
     {
-        Data = br.ReadInt16();
-        Trait = (BattleTrait)Data;
-        Skill = (BattleSkill)Data;
+        get => (BattleSkill)Data;
+        set => Data = (short)value;
     }
-    
+
+    public BattleTrait Trait
+    {
+        get => (BattleTrait)Data;
+        set => Data = (short)value;
+    }
+
+    private short Data
+    {
+        get => _data;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _data, value);
+            this.RaisePropertyChanged(nameof(Trait));
+            this.RaisePropertyChanged(nameof(Skill));
+        }
+    }
+
     public void Write(BinaryWriter writer)
     {
         writer.Write(_data);
