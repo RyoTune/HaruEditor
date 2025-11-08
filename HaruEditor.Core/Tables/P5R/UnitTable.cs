@@ -126,6 +126,33 @@ public class UnitVisualIndex(INameTable nameTable, int id) : IReadWrite, INameab
     }
 }
 
+public enum VoiceId : byte
+{
+    Jigaku,
+    YoungMen,
+    Priest,
+    Oyaji,
+    Majo,
+    Lady,
+    YoungWomen,
+    Baba,
+    Child,
+    Kemono,
+    Heehaw,
+}
+
+public enum TalkPerson : byte
+{
+    Timid,
+    Irritable,
+    Upbeat,
+    Gloomy,
+    Unknown4,
+    Unknown5,
+    Unknown6,
+    Unknown7,
+}
+
 public class UnitVoiceIndex(INameTable nameTable, int id) : IReadWrite, INameable
 {
     public string? Name
@@ -134,8 +161,8 @@ public class UnitVoiceIndex(INameTable nameTable, int id) : IReadWrite, INameabl
         set => nameTable.SetName(NameType.Enemy, id, value ?? string.Empty);
     }
     
-    public byte VoiceID { get; set; }           // Subtract 1 to get voicepack index
-    public byte TalkPerson { get; set; }
+    public VoiceId VoiceId { get; set; }           // Subtract 1 to get voicepack index
+    public TalkPerson TalkPerson { get; set; }
     public byte VoiceABCValue { get; set; }
     public byte Padding { get; set; }
 
@@ -147,8 +174,8 @@ public class UnitVoiceIndex(INameTable nameTable, int id) : IReadWrite, INameabl
 
     public void Read(BinaryReader reader)
     {
-        VoiceID = reader.ReadByte();
-        TalkPerson = reader.ReadByte();
+        VoiceId = (VoiceId)reader.ReadByte();
+        TalkPerson = (TalkPerson)reader.ReadByte();
         VoiceABCValue = reader.ReadByte();
         Padding = reader.ReadByte();
 
@@ -166,8 +193,8 @@ public class UnitVoiceIndex(INameTable nameTable, int id) : IReadWrite, INameabl
 
     public void Write(BinaryWriter writer)
     {
-        writer.Write(VoiceID);
-        writer.Write(TalkPerson);
+        writer.Write((byte)VoiceId);
+        writer.Write((byte)TalkPerson);
         writer.Write(VoiceABCValue);
         writer.Write(Padding);
 
