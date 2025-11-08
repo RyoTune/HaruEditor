@@ -29,11 +29,15 @@ public class EnumAutocompleteFactory : AbstractCellEditFactory
         if (!propDesc.PropertyType.IsEnum || propDesc.Attributes.OfType<FlagsAttribute>().Any())
             return null;
 
+        var values = Enum.GetValues(propDesc.PropertyType);
+        if (values.Length < 20) return null;
+        
         var control = new AutoCompleteBox
         {
             FilterMode = AutoCompleteFilterMode.ContainsOrdinal,
-            ItemsSource = Enum.GetValues(propDesc.PropertyType),
+            ItemsSource = values,
             ValueMemberBinding = new Binding(".") { Converter = new EnumValueConverter(propDesc.PropertyType) },
+            MinimumPrefixLength = 0,
         };
         
         control.SelectionChanged += (sender, _) =>
