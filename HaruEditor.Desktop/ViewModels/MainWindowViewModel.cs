@@ -43,7 +43,7 @@ public partial class MainWindowViewModel : ViewModelBase, IActivatableViewModel
     {
         _project = new();
         _searchItems = this.WhenValueChanged(x => x.SelectedSection)
-            .Select(x => x == null ? [] : x.Items.Select(y => new SearchItem(ObjectLocalizer.GetValue(y.Item), y)))
+            .Select(x => x == null ? [] : x.Items.Select(y => new SearchItem($"{y.Id}. {ObjectLocalizer.GetValue(y.Item)}", y)))
             .ToProperty(this, x => x.SearchItems);
         
         this.WhenActivated(disp =>
