@@ -1,0 +1,214 @@
+<UserControl
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="HaruEditor.Desktop.Views.EditorView"
+    x:DataType="viewModels:EditorViewModel"
+    x:Name="Root"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:apc="clr-namespace:HaruEditor.Desktop.Controls"
+    xmlns:conv="clr-namespace:HaruEditor.Desktop.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:echoes="clr-namespace:Echoes;assembly=Echoes.Avalonia"
+    xmlns:loc="clr-namespace:HaruEditor.Desktop.Avalonia"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="clr-namespace:HaruEditor.Desktop.Models"
+    xmlns:shadui="clr-namespace:ShadUI;assembly=ShadUI"
+    xmlns:tn="clr-namespace:HaruEditor.Desktop.Localization;assembly=HaruEditor.Desktop.Localization"
+    xmlns:viewModels="clr-namespace:HaruEditor.Desktop.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid
+        ColumnDefinitions="1* 2 2*"
+        ColumnSpacing="8"
+        Margin="16,8"
+        RowDefinitions="auto auto *"
+        RowSpacing="8">
+        <Grid
+            ColumnDefinitions="auto * auto"
+            ColumnSpacing="16"
+            Grid.ColumnSpan="4"
+            Grid.Row="0">
+            <TextBlock Classes="h2">
+                Persona 5 Royal
+            </TextBlock>
+            <StackPanel
+                Grid.Column="2"
+                Orientation="Horizontal"
+                Spacing="8">
+                <Button
+                    Classes="Secondary"
+                    Command="{Binding SelectProjectDirCommand}"
+                    Content="Select Mod Folder" />
+                <Button
+                    Classes="Primary"
+                    Command="{Binding SaveCommand}"
+                    Content="Save" />
+            </StackPanel>
+        </Grid>
+
+        <Grid
+            Grid.Row="2"
+            IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+            RowDefinitions="auto auto * auto"
+            RowSpacing="8">
+            <TextBlock
+                Classes="h3"
+                Grid.Row="0"
+                Text="{loc:LocalizeObject {Binding SelectedItem.Item}}"
+                TextTrimming="CharacterEllipsis" />
+            <TextBlock
+                Classes="Large"
+                Grid.Row="1"
+                Text="{echoes:Translate {x:Static tn:Strings.properties}}" />
+            <apc:HaruPropertyGrid
+                DataContext="{Binding SelectedItem.Item.Object, FallbackValue={x:Null}}"
+                Grid.Row="2"
+                IsAutoNameWidth="True"
+                IsCategoryVisible="False"
+                IsQuickFilterVisible="False"
+                IsTitleVisible="True"
+                NameWidth="128" />
+            <TextBox
+                AcceptsReturn="True"
+                Grid.Row="3"
+                Text="{Binding SelectedItem.Comment, FallbackValue=''}"
+                TextWrapping="Wrap"
+                shadui:ControlAssist.Height="80"
+                shadui:ControlAssist.Label="{echoes:Translate {x:Static tn:Strings.comment}}" />
+        </Grid>
+
+        <GridSplitter
+            Background="{DynamicResource BorderColor}"
+            Grid.Column="1"
+            Grid.Row="1"
+            Grid.RowSpan="2"
+            ResizeDirection="Columns"
+            x:Name="TableGrid" />
+
+        <Grid Grid.Column="2" Grid.Row="2">
+            <TabControl ItemsSource="{Binding Tables}">
+                <TabControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </TabControl.ItemTemplate>
+
+                <TabControl.ContentTemplate>
+                    <DataTemplate DataType="models:Table">
+                        <shadui:Card Padding="8">
+                            <TabControl
+                                IsTextSearchEnabled="True"
+                                ItemsSource="{Binding Sections}"
+                                SelectedItem="{Binding #Root.((viewModels:EditorViewModel)DataContext).SelectedSection}">
+                                <TabControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </TabControl.ItemTemplate>
+                                <TabControl.ContentTemplate>
+                                    <DataTemplate DataType="models:TableSection">
+                                        <!--  Manually aligning two grids because I hate myself.  -->
+                                        <Grid ColumnSpacing="8" RowDefinitions="auto auto *">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <AutoCompleteBox
+                                                    Classes="Clearable"
+                                                    FilterMode="ContainsOrdinal"
+                                                    IsTextCompletionEnabled="False"
+                                                    ItemsSource="{Binding #Root.((viewModels:EditorViewModel)DataContext).SearchItems}"
+                                                    SelectedItem="{Binding #Root.((viewModels:EditorViewModel)DataContext).SelectedSearchItem}"
+                                                    Text="{Binding #Root.((viewModels:EditorViewModel)DataContext).SearchText}"
+                                                    ValueMemberBinding="{Binding Name}"
+                                                    Watermark="Search..."
+                                                    Width="225"
+                                                    shadui:ElementAssist.Classes="Clearable">
+                                                    <AutoCompleteBox.InnerRightContent>
+                                                        <PathIcon
+                                                            Data="{x:Static shadui:Icons.Search}"
+                                                            Opacity="0.75"
+                                                            Width="16" />
+                                                    </AutoCompleteBox.InnerRightContent>
+                                                </AutoCompleteBox>
+                                                <NumericUpDown
+                                                    AllowSpin="False"
+                                                    Increment="1"
+                                                    Minimum="0"
+                                                    ParsingNumberStyle="Integer"
+                                                    ShowButtonSpinner="False"
+                                                    Value="{Binding #Root.((viewModels:EditorViewModel)DataContext).JumpId}"
+                                                    Watermark="Go to ID..."
+                                                    Width="96">
+                                                    <NumericUpDown.KeyBindings>
+                                                        <KeyBinding Command="{Binding #Root.((viewModels:EditorViewModel)DataContext).JumpCommand}" Gesture="Enter" />
+                                                    </NumericUpDown.KeyBindings>
+                                                </NumericUpDown>
+                                                <Button
+                                                    Classes="Outline"
+                                                    Command="{Binding #Root.((viewModels:EditorViewModel)DataContext).JumpCommand}"
+                                                    Content="Go" />
+                                            </StackPanel>
+                                            <Grid
+                                                ColumnDefinitions="48 1* 1*"
+                                                Margin="0,4"
+                                                Row="1">
+                                                <TextBlock
+                                                    Classes="Small"
+                                                    Grid.Column="0"
+                                                    HorizontalAlignment="Center"
+                                                    Text="ID" />
+                                                <TextBlock
+                                                    Classes="Small"
+                                                    Grid.Column="1"
+                                                    Margin="8,0,0,0"
+                                                    Text="Name" />
+                                                <TextBlock
+                                                    Classes="Small"
+                                                    Grid.Column="2"
+                                                    Text="Comment" />
+                                            </Grid>
+                                            <ListBox
+                                                Grid.ColumnSpan="3"
+                                                Grid.Row="2"
+                                                Height="{Binding #TableGrid.Bounds, Converter={x:Static conv:HateStackPanelConverter.Instance}}"
+                                                ItemsSource="{Binding Items}"
+                                                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                SelectedItem="{Binding #Root.((viewModels:EditorViewModel)DataContext).SelectedItem}"
+                                                x:Name="ItemsListBox">
+                                                <ListBox.Styles>
+                                                    <Style Selector="ListBoxItem">
+                                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                                    </Style>
+                                                </ListBox.Styles>
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid ColumnDefinitions="32 1* 1*" ColumnSpacing="8">
+                                                            <TextBlock
+                                                                Foreground="{DynamicResource MutedColor}"
+                                                                Grid.Column="0"
+                                                                Text="{Binding Id}" />
+                                                            <TextBlock
+                                                                Grid.Column="1"
+                                                                Text="{loc:LocalizeObject {Binding Item}}"
+                                                                TextTrimming="CharacterEllipsis"
+                                                                ToolTip.Tip="{loc:LocalizeObject {Binding Item}}" />
+                                                            <TextBlock
+                                                                Grid.Column="2"
+                                                                HorizontalAlignment="Left"
+                                                                Text="{Binding Comment}"
+                                                                TextTrimming="CharacterEllipsis"
+                                                                ToolTip.Tip="{Binding Comment}" />
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+                                        </Grid>
+                                    </DataTemplate>
+                                </TabControl.ContentTemplate>
+                            </TabControl>
+                        </shadui:Card>
+                    </DataTemplate>
+                </TabControl.ContentTemplate>
+            </TabControl>
+        </Grid>
+    </Grid>
+</UserControl>
