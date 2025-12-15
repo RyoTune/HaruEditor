@@ -1,6 +1,9 @@
+using System;
 using System.Reactive;
 using System.Reactive.Disposables.Fluent;
 using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using HaruEditor.Desktop.ViewModels;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
@@ -15,6 +18,13 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        if (Random.Shared.Next(10) == 0)
+        {
+            const int numAlts = 2;
+            var altId = Random.Shared.Next(numAlts) + 1;
+            Icon = new(new Bitmap(AssetLoader.Open(new($"avares://HaruEditor.Desktop/Assets/icon-alt-{altId}.ico"))));
+        }
+        
         this.WhenActivated(disp =>
         {
             ViewModel?.SelectFolder.RegisterHandler(SelectFolderHandler).DisposeWith(disp);
