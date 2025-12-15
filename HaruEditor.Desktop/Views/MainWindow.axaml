@@ -36,7 +36,7 @@
     <Grid ColumnDefinitions="auto *">
         <shadui:Sidebar
             BorderThickness="0,0,1,0"
-            CurrentRoute="{Binding CurrentRoute, Mode=OneWayToSource}"
+            CurrentRoute="{Binding CurrentRoute, Mode=OneWay}"
             Expanded="{Binding #Toggler.IsChecked}"
             Grid.Column="0"
             ItemIconContentSpacing="12"
@@ -77,25 +77,20 @@
                         </Viewbox>
                     </shadui:SidebarItem.Icon>
                 </shadui:SidebarItem>
+                <shadui:SidebarItem
+                    Content="About"
+                    Route="about"
+                    ToolTip.Tip="{Binding $parent[shadui:Sidebar].Expanded}">
+                    <shadui:SidebarItem.Icon>
+                        <Viewbox>
+                            <TextBlock
+                                Classes="LucideIcon"
+                                Foreground="{DynamicResource ForegroundColor}"
+                                Text="&#xE0F9;" />
+                        </Viewbox>
+                    </shadui:SidebarItem.Icon>
+                </shadui:SidebarItem>
             </StackPanel>
-
-            <shadui:Sidebar.Footer>
-                <StackPanel>
-                    <shadui:SidebarItem
-                        Content="About"
-                        Route="about"
-                        ToolTip.Tip="{Binding $parent[shadui:Sidebar].Expanded}">
-                        <shadui:SidebarItem.Icon>
-                            <Viewbox>
-                                <TextBlock
-                                    Classes="LucideIcon"
-                                    Foreground="{DynamicResource ForegroundColor}"
-                                    Text="&#xE0F9;" />
-                            </Viewbox>
-                        </shadui:SidebarItem.Icon>
-                    </shadui:SidebarItem>
-                </StackPanel>
-            </shadui:Sidebar.Footer>
         </shadui:Sidebar>
 
         <ContentControl Content="{Binding CurrentContent}" Grid.Column="1" />

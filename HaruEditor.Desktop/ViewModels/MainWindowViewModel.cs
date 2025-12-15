@@ -10,7 +10,7 @@ public partial class MainWindowViewModel : ViewModelBase, IActivatableViewModel
 {
     public ViewModelActivator Activator { get; } = new();
 
-    [Reactive] private string? _currentRoute;
+    [Reactive] private string? _currentRoute = "editor";
     [Reactive] private ViewModelBase? _currentContent;
     
     public MainWindowViewModel()
@@ -20,6 +20,7 @@ public partial class MainWindowViewModel : ViewModelBase, IActivatableViewModel
             this.WhenValueChanged(x => x.CurrentRoute)
                 .Subscribe(route =>
                 {
+                    Console.WriteLine(route);
                     CurrentContent = route switch
                     {
                         "editor" => new EditorViewModel(),
