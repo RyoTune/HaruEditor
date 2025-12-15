@@ -73,7 +73,7 @@
                             <TextBlock
                                 Classes="LucideIcon"
                                 Foreground="{DynamicResource ForegroundColor}"
-                                Text="&#xE154;" />
+                                Text="&#xE322;" />
                         </Viewbox>
                     </shadui:SidebarItem.Icon>
                 </shadui:SidebarItem>
@@ -81,16 +81,6 @@
 
             <shadui:Sidebar.Footer>
                 <StackPanel>
-                    <shadui:SidebarItem Content="Settings" Route="settings">
-                        <shadui:SidebarItem.Icon>
-                            <Viewbox>
-                                <TextBlock
-                                    Classes="LucideIcon"
-                                    Foreground="{DynamicResource ForegroundColor}"
-                                    Text="&#xE154;" />
-                            </Viewbox>
-                        </shadui:SidebarItem.Icon>
-                    </shadui:SidebarItem>
                     <shadui:SidebarItem
                         Content="About"
                         Route="about"
