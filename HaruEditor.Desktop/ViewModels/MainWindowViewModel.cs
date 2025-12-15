@@ -23,7 +23,8 @@ public partial class MainWindowViewModel : ViewModelBase, IActivatableViewModel
                     CurrentContent = route switch
                     {
                         "editor" => new EditorViewModel(),
-                        _ => (ViewModelBase?)null
+                        "about" => new AboutViewModel(),
+                        _ => null
                     };
                 }).DisposeWith(disp);
         });

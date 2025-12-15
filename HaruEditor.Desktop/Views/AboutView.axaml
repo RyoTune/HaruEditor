@@ -1,0 +1,20 @@
+<UserControl
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="HaruEditor.Desktop.Views.AboutView"
+    x:DataType="viewModels:AboutViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="clr-namespace:HaruEditor.Desktop.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="16,8">
+        <StackPanel>
+            <TextBlock Classes="h1">About</TextBlock>
+            <TextBlock Classes="Lead" Text="{Binding Version, StringFormat='Haru Editor v{0}', FallbackValue='Haru Editor v1.0.0'}" />
+            <TextBlock Classes="p" xml:space="preserve"><Bold>Haru Editor</Bold> is a <Italic>Persona 5 Royal</Italic> TBL file editor created by&#160;<Bold>RyoTune</Bold>.</TextBlock>
+            <TextBlock Classes="p" xml:space="preserve">Originally commissioned by&#160;<Bold>kayther33</Bold>.</TextBlock>
+        </StackPanel>
+    </Grid>
+</UserControl>
