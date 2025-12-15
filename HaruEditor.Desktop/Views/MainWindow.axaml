@@ -1,5 +1,5 @@
 <shadui:Window
-    Icon="/Assets/avalonia-logo.ico"
+    Icon="/Assets/icon.ico"
     Title="Haru Editor"
     d:DesignHeight="450"
     d:DesignWidth="800"
