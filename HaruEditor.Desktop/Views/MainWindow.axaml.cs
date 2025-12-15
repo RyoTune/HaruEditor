@@ -22,7 +22,7 @@ public partial class MainWindow : Window
         {
             const int numAlts = 2;
             var altId = Random.Shared.Next(numAlts) + 1;
-            Icon = new(new Bitmap(AssetLoader.Open(new($"avares://HaruEditor.Desktop/Assets/icon-alt-{altId}.ico"))));
+            Icon = new(new Bitmap(AssetLoader.Open(new($"avares://Haru Editor/Assets/icon-alt-{altId}.ico"))));
         }
         
         this.WhenActivated(disp =>
