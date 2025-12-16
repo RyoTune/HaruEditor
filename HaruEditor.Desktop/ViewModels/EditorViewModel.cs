@@ -15,11 +15,13 @@ using HaruEditor.Desktop.Models;
 using HaruEditor.Desktop.Project;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
+using ShadUI;
 
 namespace HaruEditor.Desktop.ViewModels;
 
 public partial class EditorViewModel : ViewModelBase, IActivatableViewModel
 {
+    private readonly ToastManager _toasts;
     private static readonly TimeSpan DefaultThrottle = TimeSpan.FromMilliseconds(300);
     
     public ViewModelActivator Activator { get; } = new();
@@ -39,9 +41,11 @@ public partial class EditorViewModel : ViewModelBase, IActivatableViewModel
     private readonly ObservableAsPropertyHelper<IEnumerable<SearchItem>> _searchItems;
     public IEnumerable<SearchItem> SearchItems => _searchItems.Value;
 
-    public EditorViewModel()
+    public EditorViewModel(ToastManager toasts)
     {
+        _toasts = toasts;
         _project = new();
+        _canSave = _project.WhenValueChanged(x => x.ProjectFile).Select(x => x != null);
         _searchItems = this.WhenValueChanged(x => x.SelectedSection)
             .Select(x => x == null ? [] : x.Items.Select(y => new SearchItem($"{y.Id}. {ObjectLocalizer.GetValue(y.Item)}", y)))
             .ToProperty(this, x => x.SearchItems);
@@ -124,12 +128,15 @@ public partial class EditorViewModel : ViewModelBase, IActivatableViewModel
         
         _project.SetCurrentProject(selectedDir);
     }
+
+    private IObservable<bool> _canSave;
     
-    [ReactiveCommand]
+    [ReactiveCommand(CanExecute = nameof(_canSave))]
     private async Task Save()
     {
         _project.Save();
-        
+
+        var savedTbls = new List<string>();
         foreach (var table in _tables)
         {
             var tableFile = _tableFileMap[table];
@@ -141,6 +148,7 @@ public partial class EditorViewModel : ViewModelBase, IActivatableViewModel
             // Save file.
             await using var writer = new BigEndianBinaryWriter(File.Create(tableFile));
             table.Content.Write(writer);
+            savedTbls.Add(table.Name);
         }
 
         if (_nameTableFile != null)
@@ -150,7 +158,14 @@ public partial class EditorViewModel : ViewModelBase, IActivatableViewModel
             
             await using var fs = File.Create(_nameTableFile);
             _nameTableProxy.Write(fs);
+            savedTbls.Add("NAME.TBL");
         }
+
+        _toasts.CreateToast("Saved Successfully")
+            .WithContent(string.Join(", ", savedTbls))
+            .DismissOnClick()
+            .WithDelay(5)
+            .ShowSuccess();
     }
 
     [ReactiveCommand]

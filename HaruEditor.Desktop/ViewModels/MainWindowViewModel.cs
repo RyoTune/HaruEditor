@@ -3,6 +3,7 @@ using System.Reactive.Disposables.Fluent;
 using DynamicData.Binding;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
+using ShadUI;
 
 namespace HaruEditor.Desktop.ViewModels;
 
@@ -23,13 +24,15 @@ public partial class MainWindowViewModel : ViewModelBase, IActivatableViewModel
                     Console.WriteLine(route);
                     CurrentContent = route switch
                     {
-                        "editor" => new EditorViewModel(),
+                        "editor" => new EditorViewModel(Toasts),
                         "about" => new AboutViewModel(),
                         _ => null
                     };
                 }).DisposeWith(disp);
         });
     }
+
+    public ToastManager Toasts { get; } = new();
 
     [ReactiveCommand]
     private void ChangeRoute(string newRoute) => CurrentRoute = newRoute;

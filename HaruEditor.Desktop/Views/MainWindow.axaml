@@ -94,5 +94,7 @@
         </shadui:Sidebar>
 
         <ContentControl Content="{Binding CurrentContent}" Grid.Column="1" />
+
+        <shadui:ToastHost Grid.ColumnSpan="2" Manager="{Binding Toasts}" />
     </Grid>
 </shadui:Window>

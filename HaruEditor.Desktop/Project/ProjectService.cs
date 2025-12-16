@@ -11,8 +11,7 @@ public partial class ProjectService : ReactiveObject, ICommentService
     private static readonly JsonSerializerOptions JsonSerializerOptions = new() { WriteIndented = true };
     
     [Reactive(SetModifier = AccessModifier.Private)] private ProjectConfig? _currentProject;
-    
-    public string? ProjectFile { get; private set; }
+    [Reactive(SetModifier = AccessModifier.Private)] private string? _projectFile;
 
     public void SetCurrentProject(string projectDir)
     {
