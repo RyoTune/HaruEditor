@@ -333,11 +333,11 @@ public partial class ActiveSkill(INameTable nameTable, int id) : ReactiveObject,
     }
 }
 
-[Flags]
 public enum ValidTargets : byte
 {
-    Enemies = 1 << 0,
-    Allies = 1 << 1
+    Allies = 1,
+    Enemies,
+    Any,
 }
 
 public partial class SkillElement(INameTable nameTable, int id) : ReactiveObject, IReadWrite, INameable
