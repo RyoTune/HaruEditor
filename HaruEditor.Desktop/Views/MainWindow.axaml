@@ -48,6 +48,7 @@
                 <Style Selector="shadui|SidebarItem">
                     <Setter Property="Command" Value="{Binding ChangeRouteCommand}" />
                     <Setter Property="CommandParameter" Value="{Binding Route, RelativeSource={RelativeSource Self}}" />
+                    <Setter Property="ToolTip.Tip" Value="{Binding Content, RelativeSource={RelativeSource Self}}" />
                 </Style>
             </shadui:Sidebar.Styles>
             <shadui:Sidebar.Header>
@@ -77,10 +78,7 @@
                         </Viewbox>
                     </shadui:SidebarItem.Icon>
                 </shadui:SidebarItem>
-                <shadui:SidebarItem
-                    Content="About"
-                    Route="about"
-                    ToolTip.Tip="{Binding $parent[shadui:Sidebar].Expanded}">
+                <shadui:SidebarItem Content="About" Route="about">
                     <shadui:SidebarItem.Icon>
                         <Viewbox>
                             <TextBlock
