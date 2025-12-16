@@ -466,19 +466,19 @@ public enum BuffDebuff : byte
 [Flags]
 public enum AilmentStatus : uint
 {
-    Burn        = 1u << 31,   // Bit 0 → Bit 31
-    Freeze      = 1u << 30,   // Bit 1 → Bit 30
-    Shock       = 1u << 29,   // Bit 2 → Bit 29
-    Dizzy       = 1u << 28,   // Bit 3 → Bit 28
-    Confuse     = 1u << 27,   // Bit 4 → Bit 27
-    Fear        = 1u << 26,   // Bit 5 → Bit 26
-    Forget      = 1u << 25,   // Bit 6 → Bit 25
-    Hunger      = 1u << 24,   // Bit 7 → Bit 24
-    Sleep       = 1u << 23,   // Bit 8 → Bit 23
-    Rage        = 1u << 22,   // Bit 9 → Bit 22
-    Despair     = 1u << 21,   // Bit 10 → Bit 21
-    Brainwash   = 1u << 20,   // Bit 11 → Bit 20
+    Burn        = 1u << 0,  // AilmentStatus_00_Burn
+    Freeze      = 1u << 1,  // AilmentStatus_01_Freeze
+    Shock       = 1u << 2,  // AilmentStatus_02_Shock
+    Dizzy       = 1u << 3,  // AilmentStatus_03_Dizzy
+    Confuse     = 1u << 4,  // AilmentStatus_04_Confuse
+    Fear        = 1u << 5,  // AilmentStatus_05_Fear
+    Forget      = 1u << 6,  // AilmentStatus_06_Forget
+    Hunger      = 1u << 7,  // AilmentStatus_07_Hunger
+    Sleep       = 1u << 8,  // AilmentStatus_08_Sleep
+    Rage        = 1u << 9,  // AilmentStatus_09_Rage
+    Despair     = 1u << 10, // AilmentStatus_10_Despair
+    Brainwash   = 1u << 11, // AilmentStatus_11_Brainwash
 
-    // Other ailments occupy bits 12–31 in original, reversed → bits 0–19
-    OtherAilmentsMask = 0x000FFFFF // 20 bits starting from bit 0
+    // Bits 12–31 (20 bits total)
+    //OtherAilmentsMask = 0xFFFFF000u
 }
